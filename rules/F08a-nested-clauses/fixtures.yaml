@@ -1,0 +1,44 @@
+schema: 1
+rule: F08a
+fixtures:
+  - id: F08a-fail-001
+    text: 由於市場需求持續增加，加上技術不斷進步，因此企業紛紛投入研發，進而推動整個產業的轉型升級。
+    expect: fail
+    spans: [[0, 44]]
+  - id: F08a-fail-002
+    text: 由於團隊導入自動化測試，而且流程更加透明，從而大幅提升了整體交付品質。
+    expect: fail
+    spans: [[0, 34]]
+  - id: F08a-fail-003
+    text: 在既有訪談的基礎上，進一步整理讀者最常提到的困難，編輯便能調整章節順序。
+    expect: fail
+    spans: [[0, 13]]
+  - id: F08a-pass-001
+    text: 因為雨勢增強，山路已經封閉。接駁車因此改在車站等候，旅客也收到新的集合時間。
+    expect: pass
+    note: 因果關係拆成兩句
+  - id: F08a-pass-002
+    text: 研究先整理既有訪談，再比較三組讀者的回應。最後一節說明樣本限制與後續方向。
+    expect: pass
+  - id: F08a-pass-003
+    text: 在資料完整的前提下，我們才進行統計分析；缺少欄位的紀錄另行查核。
+    expect: pass
+    note: 合法前提句，沒有套用「進一步／進而／從而」
+  - id: F08a-pass-004
+    text: 因為上游回覆延遲，加上測試環境臨時重建，因此今天的驗收必須順延。
+    expect: pass
+    note: 三段因果，台灣職場常見說法
+  - id: F08a-pass-005
+    text: 因為下雨，加上塞車，所以我遲到了。
+    expect: pass
+  - id: F08a-pass-006
+    text: 由於颱風接近，而且雨勢持續增強，因此各縣市宣布明天停班停課。
+    expect: pass
+  - id: F08a-pass-007
+    text: 因為工程延宕，再加上預算追加，所以捷運通車時間延到明年。
+    expect: pass
+  - id: F08a-fail-004
+    text: 因為昨晚下大雨，加上排水溝堵住，因此地下室淹水，進而造成電梯故障。
+    expect: fail
+    spans: [[0, 32]]
+    note: 審查探針（09-27）：真實因果鏈，句型上分不出來；規則為 info，訊息請作者確認每一環是否需要，不要求拆句

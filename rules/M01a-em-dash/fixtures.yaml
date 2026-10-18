@@ -1,0 +1,104 @@
+schema: 1
+rule: M01a
+fixtures:
+  - id: M01a-fail-001
+    text: 這個功能 — 雖然還不完美 — 已經可以用了。
+    expect: fail
+    spans: [[5, 6], [14, 15]]
+  - id: M01a-fail-002
+    text: 我們重寫了匯入流程—舊版在大檔案上會卡住。
+    expect: fail
+    spans: [[9, 10]]
+  - id: M01a-fail-003
+    text: 專案延後了—原因是供應商還沒回覆。
+    expect: fail
+    spans: [[5, 6]]
+  - id: M01a-fail-004
+    text: 我原本以為這只是小問題—結果整個團隊花了三天才修好。
+    expect: fail
+    spans: [[11, 12]]
+  - id: M01a-pass-001
+    text: 他引用英文原文：「The deadline—already extended—will not move again.」
+    expect: pass
+    note: 英文引文受保護
+  - id: M01a-pass-002
+    text: 範例中的 `foo—bar` 是測試資料。
+    expect: pass
+    note: 前後不是中文字
+  - id: M01a-pass-003
+    text: 這個功能雖然還不完美，但已經可以用了。
+    expect: pass
+  - id: M01a-pass-004
+    text: 漢武帝時，掌管音樂的衙署——樂府，負責搜集民間歌謠來配樂唱歌。
+    expect: pass
+    note: 教育部手冊破折號例句，以 U+2014 ×2 輸入；出處：教育部《重訂標點符號手冊》修訂版（S147）
+  - id: M01a-pass-005
+    text: 漢武帝時，掌管音樂的衙署──樂府，負責搜集民間歌謠來配樂唱歌。
+    expect: pass
+    note: 教育部手冊破折號例句，以 U+2500 ×2 輸入；出處：教育部《重訂標點符號手冊》修訂版（S147）
+  - id: M01a-pass-006
+    text: 這件事——需要重新思考。
+    expect: pass
+    note: 破折號不是英文 em dash
+  - id: M01a-pass-007
+    text: 嗚——嗚——嗚——，警報的聲音又響起來了。
+    expect: pass
+    note: 教育部手冊破折號例句（聲音延續）；出處：教育部《重訂標點符號手冊》修訂版（S147）
+  - id: M01a-pass-008
+    text: 曾文正公享年六十二歲（西元1811—1872年）。
+    expect: pass
+    note: 教育部手冊連接號甲式例句；出處：教育部《重訂標點符號手冊》修訂版（S147）
+  - id: M01a-pass-009
+    text: 這本書第81—93頁的內容是在討論如何增進人際關係。
+    expect: pass
+    note: 教育部手冊連接號甲式例句；出處：教育部《重訂標點符號手冊》修訂版（S147）
+  - id: M01a-pass-010
+    text: 高鐵通車以後，從北到南（臺北—左營）不用兩個小時。
+    expect: pass
+    note: 教育部手冊連接號甲式例句（地名範圍）；出處：教育部《重訂標點符號手冊》修訂版（S147）
+  - id: M01a-pass-011
+    text: The deadline—already extended—will not move again.
+    expect: pass
+    note: 英文段落
+  - id: M01a-pass-012
+    text: —你說什麼？
+    expect: pass
+    note: 句首對話破折
+  - id: M01a-pass-013
+    text: 高鐵臺北—左營不用兩個小時。
+    expect: pass
+    note: 審查探針（09-27）：沒有括號的地名範圍（教育部手冊連接號甲式）
+  - id: M01a-pass-014
+    text: 這班區間車行駛南港站—新竹站，沿途每站都停。
+    expect: pass
+    note: 車站範圍
+  - id: M01a-pass-015
+    text: 門診時間是週一—週五上午九點到十二點。
+    expect: pass
+    note: 星期範圍
+  - id: M01a-fail-005
+    text: 我們約好在台北見面—結果他整整遲到一個小時。
+    expect: fail
+    spans: [[9, 10]]
+    note: 地名不緊貼長橫線時照樣提出
+  - id: M01a-pass-016
+    text: 礁溪—頭城搭火車只要十分鐘。
+    expect: pass
+    note: 審查探針 r2（09-27）：句首兩字地名範圍（教育部手冊連接號甲式）
+  - id: M01a-pass-017
+    text: 北投—淡水騎自行車約需一小時。
+    expect: pass
+    note: 審查探針 r2（09-27）：句首兩字地名範圍
+  - id: M01a-pass-018
+    text: 瑞芳—猴硐搭區間車很方便。
+    expect: pass
+    note: 審查探針 r2（09-27）：句首兩字地名範圍
+  - id: M01a-pass-019
+    text: 週末我們從礁溪—頭城一路騎到海邊。
+    expect: pass
+    note: 「從」後面的兩字地名範圍
+  - id: M01a-fail-006
+    text: 後來他才承認—其實根本沒去開會。
+    expect: fail
+    spans: [[6, 7]]
+    note: 句首前面超過三個字的子句照樣提出

@@ -1,0 +1,64 @@
+schema: 1
+rule: F09a
+fixtures:
+  - id: F09a-fail-001
+    text: 編輯先對三份稿件進行全面的評估，再決定修改順序。
+    expect: fail
+    spans: [[8, 15]]
+  - id: F09a-fail-002
+    text: 這次調整已達到優化的目的，首頁載入時間也縮短了。
+    expect: fail
+    spans: [[5, 9]]
+  - id: F09a-fail-003
+    text: 團隊根據訪談作出初步分析，並列出需要補問的題目。
+    expect: fail
+    spans: [[6, 12]]
+  - id: F09a-fail-004
+    text: 這次停電再次顯示備援電力的重要性，管理處已安排演練。
+    expect: fail
+    spans: [[6, 16]]
+  - id: F09a-pass-001
+    text: 研究團隊評估三種取樣方法，並分析各組回覆的差異。
+    expect: pass
+    note: 學術內容直接使用動詞
+  - id: F09a-pass-002
+    text: 委員會審查申請資料後，要求補上缺漏的財務報表。
+    expect: pass
+  - id: F09a-pass-003
+    text: 編輯比較兩份訪談紀錄，確認受訪者對事件順序的描述一致。
+    expect: pass
+  - id: F09a-pass-004
+    text: 目前進行中的研究計畫共有三項。
+    expect: pass
+  - id: F09a-pass-005
+    text: 兩派形成共識後再討論預算。
+    expect: pass
+  - id: F09a-pass-006
+    text: 老師給予學生討論的時間。
+    expect: pass
+  - id: F09a-pass-007
+    text: 新制實施三年後的檢討報告今天出爐。
+    expect: pass
+  - id: F09a-pass-008
+    text: 三所大學形成研究聯盟，共享實驗設備。
+    expect: pass
+  - id: F09a-pass-009
+    text: 公司給予分析師更多內部資料。
+    expect: pass
+  - id: F09a-pass-010
+    text: 明天午後雷陣雨的可能性很高，出門記得帶傘。
+    expect: pass
+  - id: F09a-pass-011
+    text: 我很清楚睡眠的重要性，但還是常熬夜。
+    expect: pass
+  - id: F09a-pass-012
+    text: 研究團隊已完成訪談，預計下個月開始分析。
+    expect: pass
+  - id: F09a-fail-005
+    text: 這份報告凸顯了跨部門溝通的重要性。
+    expect: fail
+    spans: [[4, 16]]
+  - id: F09a-pass-013
+    text: 檢察官已對這起弊案進行調查。
+    expect: pass
+    note: 審查探針（09-27）：司法報導的正式程序

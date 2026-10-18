@@ -1,0 +1,5 @@
+node_modules/
+dist/
+*.tsbuildinfo
+src/browser/data.generated.ts
+*.tgz

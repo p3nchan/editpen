@@ -1,0 +1,36 @@
+schema: 1
+rule: F11a
+fixtures:
+  - id: F11a-fail-001
+    text: 她不是在哀悼過去，她是在告別童年。
+    expect: fail
+    spans: [[0, 17]]
+  - id: F11a-fail-002
+    text: 我不是在否定你的努力，我是在提醒大家期限快到了。
+    expect: fail
+    spans: [[0, 24]]
+  - id: F11a-fail-003
+    text: 他不是在拖延進度，他是在等待客戶確認。
+    expect: fail
+    spans: [[0, 19]]
+  - id: F11a-pass-001
+    text: 編輯保留了原句：「她不是在哀悼過去，她是在告別童年。」
+    expect: pass
+    note: 引述內容受保護
+  - id: F11a-pass-002
+    text: 她不是在哀悼過去，而是在整理父親留下的信。
+    expect: pass
+    note: 沒有重複主詞的偽反轉句型
+  - id: F11a-fail-004
+    text: 我們不是在追求速度，我們是在追求穩定。
+    expect: fail
+    spans: [[0, 19]]
+  - id: F11a-fail-005
+    text: 他不是在睡覺，他是在裝睡。
+    expect: fail
+    spans: [[0, 13]]
+    note: 審查探針（09-27）：真正的區分，句型上分不出來；規則為 info，訊息只請作者確認
+  - id: F11a-pass-003
+    text: 我們不是在改善流程，而是在重塑未來。
+    expect: pass
+    note: 審查探針（09-27）：沒有重複主詞，這條不抓；由 D01a 提出

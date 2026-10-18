@@ -1,0 +1,92 @@
+schema: 1
+rule: F02a
+fixtures:
+  - id: F02a-fail-001
+    text: 團隊重新盤點後，這項改版需要創新、需要勇氣、需要堅持。
+    expect: fail
+    spans: [[12, 27]]
+  - id: F02a-fail-002
+    text: 面對接連延期，負責人要說清楚、要做紮實、要守承諾。
+    expect: fail
+    spans: [[10, 25]]
+  - id: F02a-fail-003
+    text: 這套流程帶來更少返工、帶來更快回覆、帶來更穩定的交付。
+    expect: fail
+    spans: [[4, 27]]
+  - id: F02a-pass-001
+    text: 一、專案需要創新、需要勇氣、需要堅持。
+    expect: pass
+    note: 編號清單刻意維持三項對稱
+  - id: F02a-pass-002
+    text: 主持人在會上重複口號：「需要創新、需要勇氣、需要堅持。」台下很快回到實際議程。
+    expect: pass
+    note: 引述中的口號受保護
+  - id: F02a-pass-003
+    text: 衛福部提醒民眾要勤洗手、要戴口罩、要避免群聚。
+    expect: pass
+    note: 轉述提醒
+  - id: F02a-pass-004
+    text: '## 需要勇氣、需要耐心、需要時間！'
+    expect: pass
+    note: Markdown 標題
+  - id: F02a-pass-005
+    text: |-
+      我的三個原則：
+      - 要早睡、要運動、要多喝水。
+    expect: pass
+    note: Markdown 項目符號
+  - id: F02a-pass-006
+    text: 我對新人的期待是要準時、要安靜、要專心、要做筆記。
+    expect: pass
+    note: 四項清單，不是三項排比
+  - id: F02a-fail-004
+    text: 它能幫我們整理思路、提升效率、拓展視野。
+    expect: fail
+    spans: [[5, 19]]
+  - id: F02a-fail-005
+    text: 一早醒來，我就想通了：這份工作需要耐心、需要勇氣、需要時間。
+    expect: fail
+    spans: [[15, 30]]
+    note: 以「一」起頭的一般段落不再整段跳過
+  - id: F02a-fail-006
+    text: 2025 年起，政府需要減碳、需要轉型、需要培育人才。
+    expect: fail
+    spans: [[10, 27]]
+    note: 以數字起頭的一般段落不再整段跳過
+  - id: F02a-pass-007
+    text: 她提醒孩子要穿外套、要帶雨傘、要記得吃早餐。
+    expect: pass
+    note: 審查探針（09-27）：轉述叮嚀
+  - id: F02a-fail-007
+    text: 煎牛排要大火、要少翻、要靜置。
+    expect: fail
+    spans: [[3, 15]]
+    note: 審查探針（09-27）：食譜三步驟，句型上和制式句型分不出來；規則為 info，訊息已說明步驟可保留
+  - id: F02a-fail-008
+    text: 我們需要深入探討、積極協作、共同創造。
+    expect: fail
+    spans: [[4, 18]]
+    note: 審查探針（09-27）AI 制式句型（副詞＋動詞三項）
+  - id: F02a-pass-008
+    text: 這學期我們深入探討了三篇論文，也練習了兩次口頭報告。
+    expect: pass
+    note: 單一「深入探討」不是三項排比
+  - id: F02a-pass-009
+    text: 委員會要求各校積極輔導、主動通報、持續追蹤、定期回報。
+    expect: pass
+    note: 四項清單
+  - id: F02a-fail-009
+    text: 護理師主動關懷、持續追蹤、充分說明。
+    expect: fail
+    spans: [[3, 17]]
+    note: 審查探針 r2（09-27）：三項各自獨立的職責，目前以 INFO 提出（已知誤判；可選的編輯提示）
+  - id: F02a-fail-010
+    text: 工作人員深入訪談、全面記錄、切實查證。
+    expect: fail
+    spans: [[4, 18]]
+    note: 審查探針 r2（09-27）：三項各自獨立的職責，目前以 INFO 提出（已知誤判；可選的編輯提示）
+  - id: F02a-fail-011
+    text: 警方持續搜索、全面清查、積極追查。
+    expect: fail
+    spans: [[2, 16]]
+    note: 審查探針 r2（09-27）：三項各自獨立的職責，目前以 INFO 提出（已知誤判；可選的編輯提示）

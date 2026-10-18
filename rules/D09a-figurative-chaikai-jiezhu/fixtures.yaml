@@ -1,0 +1,277 @@
+schema: 1
+rule: D09a
+fixtures:
+  - id: D09a-fail-001
+    text: 遇到卡關時，先把問題拆開，一次處理一塊。
+    expect: fail
+    spans: [[7, 12]]
+  - id: D09a-fail-002
+    text: 把這件事拆開來理解，就不會那麼焦慮。
+    expect: fail
+    spans: [[0, 6]]
+    note: 在「把這件事拆開」這段提出
+  - id: D09a-fail-003
+    text: 所以我們要做的，是把這個流程的每一步拆開。
+    expect: fail
+    spans: [[9, 20]]
+  - id: D09a-fail-004
+    text: 先把重點拆開，再依序談每個選項。
+    expect: fail
+    spans: [[1, 6]]
+  - id: D09a-fail-005
+    text: 我們先把這句話拆開來看，真正的問題出在前提。
+    expect: fail
+    spans: [[3, 9]]
+    note: 在「把這句話拆開」這段提出
+  - id: D09a-fail-006
+    text: 把焦慮拆開來看，先認出你真正擔心什麼。
+    expect: fail
+    spans: [[0, 5]]
+  - id: D09a-fail-007
+    text: 好的陪伴，是先接住對方的不安。
+    expect: fail
+    spans: [[7, 14]]
+  - id: D09a-fail-008
+    text: 讓脆弱被接住，才有勇氣重新開始。
+    expect: fail
+    spans: [[3, 6]]
+  - id: D09a-fail-009
+    text: 我們可以先接住你的情緒，再一起找答案。
+    expect: fail
+    spans: [[5, 11]]
+  - id: D09a-fail-010
+    text: 那句話接住了我的委屈，讓我終於敢哭。
+    expect: fail
+    spans: [[3, 10]]
+  - id: D09a-fail-011
+    text: 她的情緒被接住以後，才說得出真正的想法。
+    expect: fail
+    spans: [[4, 7]]
+  - id: D09a-pass-001
+    text: 快遞員提醒收件人，拆開包裹前先拍照存證。
+    expect: pass
+    note: 審查（09-28）字面語料
+  - id: D09a-pass-002
+    text: 媽媽拆開信封，確認學校寄來的通知。
+    expect: pass
+    note: 審查（09-28）字面語料
+  - id: D09a-pass-003
+    text: 今天的料理從拆開真空包裝開始。
+    expect: pass
+    note: 審查（09-28）字面語料
+  - id: D09a-pass-004
+    text: 開箱時先把盒子拆開來看，確認配件有沒有漏掉。
+    expect: pass
+    note: 審查（09-28）字面語料
+  - id: D09a-pass-005
+    text: 修車師傅把零件逐一拆開，放在工作檯上。
+    expect: pass
+    note: 審查（09-28）字面語料
+  - id: D09a-pass-006
+    text: 她把紙箱拆開來分析每一層的緩衝材料。
+    expect: pass
+    note: 審查（09-28）字面語料
+  - id: D09a-pass-007
+    text: 拆開來看，這個便當盒裡有三個隔層。
+    expect: pass
+    note: 審查（09-28）字面語料
+  - id: D09a-pass-008
+    text: 記者拆開寄來的樣品盒，裡面裝著兩瓶醬油。
+    expect: pass
+    note: 審查（09-28）字面語料
+  - id: D09a-pass-009
+    text: 宅配人員請我把這個拆開來看，確認玻璃杯是否破損。
+    expect: pass
+    note: 審查（09-28）字面語料
+  - id: D09a-pass-010
+    text: 孩子們把積木城堡拆開，重新蓋了一座橋。
+    expect: pass
+    note: 審查（09-28）字面語料
+  - id: D09a-pass-011
+    text: 外野手接住高飛球，結束這半局。
+    expect: pass
+    note: 審查（09-28）字面語料
+  - id: D09a-pass-012
+    text: 爸爸伸手接住孩子丟來的鑰匙。
+    expect: pass
+    note: 審查（09-28）字面語料
+  - id: D09a-pass-013
+    text: 杯子從桌邊滑落，姊姊趕緊接住。
+    expect: pass
+    note: 審查（09-28）字面語料
+  - id: D09a-pass-014
+    text: 接力賽第二棒接住交來的棒子後開始衝刺。
+    expect: pass
+    note: 審查（09-28）字面語料
+  - id: D09a-pass-015
+    text: 消防員在窗下接住每一個人，再送到救護車旁。
+    expect: pass
+    note: 審查（09-28）字面語料
+  - id: D09a-pass-016
+    text: 父親從滑梯下方接住自己三歲的孩子。
+    expect: pass
+    note: 審查（09-28）字面語料
+  - id: D09a-pass-017
+    text: 球被接住的感覺很扎實，手套裡還留著震動。
+    expect: pass
+    note: 審查（09-28）字面語料
+  - id: D09a-pass-018
+    text: 新生兒被接住的時候，護理師立刻擦乾身體。
+    expect: pass
+    note: 審查（09-28）字面語料
+  - id: D09a-pass-019
+    text: 教練提醒捕手要接住每一個人的傳球。
+    expect: pass
+    note: 審查（09-28）字面語料
+  - id: D09a-pass-020
+    text: 我接住了剛從樹上掉下來的蘋果。
+    expect: pass
+    note: 審查（09-28）字面語料
+  - id: D09a-pass-021
+    text: 收貨員拆開紙箱，逐件核對出貨單。
+    expect: pass
+    note: 審查第二輪（09-28）字面語料
+  - id: D09a-pass-022
+    text: 貨運司機把破損的紙箱拆開來講解驗貨程序。
+    expect: pass
+    note: 審查第二輪（09-28）字面語料
+  - id: D09a-pass-023
+    text: 烘焙老師把千層蛋糕拆開來講解每層的做法。
+    expect: pass
+    note: 審查第二輪（09-28）字面語料
+  - id: D09a-pass-024
+    text: 媽媽把月餅拆開來說明內餡的材料。
+    expect: pass
+    note: 審查第二輪（09-28）字面語料
+  - id: D09a-pass-025
+    text: 雙人滑冰選手失去平衡時伸手接住彼此。
+    expect: pass
+    note: 審查第二輪（09-28）字面語料
+  - id: D09a-pass-026
+    text: 傳歪的球終於被接住，隊友都鬆了口氣。
+    expect: pass
+    note: 審查第二輪（09-28）字面語料
+  - id: D09a-pass-027
+    text: 小孩從椅子上滑下來，終於被爸爸接住。
+    expect: pass
+    note: 審查第二輪（09-28）字面語料
+  - id: D09a-pass-028
+    text: 接住自己跌落的帽子後，孩子繼續往前跑。
+    expect: pass
+    note: 審查第二輪（09-28）字面語料
+  - id: D09a-pass-029
+    text: 維修員把故障的抽屜拆開來說明滑軌為何卡住。
+    expect: pass
+    note: 審查第二輪（09-28）字面語料
+  - id: D09a-pass-030
+    text: 師傅把水龍頭拆開來解釋墊圈的位置。
+    expect: pass
+    note: 審查第二輪（09-28）字面語料
+  - id: D09a-pass-031
+    text: 手術室裡，護理師接住滑落的手術剪刀。
+    expect: pass
+    note: 審查第二輪（09-28）字面語料
+  - id: D09a-pass-032
+    text: 早產兒終於被護理師接住，隨即送進保溫箱。
+    expect: pass
+    note: 審查第二輪（09-28）字面語料
+  - id: D09a-pass-033
+    text: 快遞員把退貨包裹拆開來談破損的原因。
+    expect: pass
+    note: 審查第二輪（09-28）字面語料
+  - id: D09a-pass-034
+    text: 雙人雜技表演中，兩名演員在落地前接住彼此。
+    expect: pass
+    note: 審查第二輪（09-28）字面語料
+  - id: D09a-pass-035
+    text: 投手把棒球丟得太偏，捕手仍接住了那顆球。
+    expect: pass
+    note: 審查第二輪（09-28）字面語料
+  - id: D09a-pass-036
+    text: 講師說：「我們把問題拆開來講。」
+    expect: pass
+    note: 引文受保護
+  - id: D09a-pass-037
+    text: 拆解問題是工程師每天的工作。
+    expect: pass
+    note: 「拆解」不在規則範圍
+  - id: D09a-pass-038
+    text: 我們把這個拆開來看，其實只有三個步驟。
+    expect: pass
+    note: 已知漏網：和開箱的「把這個拆開來看」無法區分
+  - id: D09a-pass-039
+    text: 拆開來看，營收成長主要來自兩個客群。
+    expect: pass
+    note: 已知漏網：和「拆開來看，這個便當盒…」無法區分
+  - id: D09a-pass-040
+    text: 這個概念有點抽象，我們拆開來講。
+    expect: pass
+    note: 已知漏網：和「把紙箱拆開來講解」無法區分
+  - id: D09a-pass-041
+    text: 你的情緒值得被接住。
+    expect: pass
+    note: 已知漏網：和「傳歪的球終於被接住」同形，「值得」這類詞已不再當作觸發條件
+  - id: D09a-pass-042
+    text: 學會接住自己，比急著變好更重要。
+    expect: pass
+    note: 已知漏網：和「接住自己跌落的帽子」無法區分
+  - id: D09a-pass-043
+    text: 那一刻，我第一次有被接住的感覺。
+    expect: pass
+    note: 已知漏網：和「球被接住的感覺」無法區分
+  - id: D09a-pass-044
+    text: 我會在你崩潰的時候接住你。
+    expect: pass
+    note: 已知漏網：單獨的「接住你」字面用法常見
+  - id: D09a-pass-045
+    text: 有人願意接住你，這份安全感很珍貴。
+    expect: pass
+    note: 已知漏網：單獨的「接住你」字面用法常見
+  - id: D09a-pass-046
+    text: 他總能接住每一個人心裡的難過。
+    expect: pass
+    note: 已知漏網：「接住每一個人」字面用法常見
+  - id: D09a-pass-049
+    text: 工人把包裝拆開，取出裡面的玻璃瓶。
+    expect: pass
+    note: 審查第三輪（09-28）字面語料
+  - id: D09a-pass-050
+    text: 倉管把紙箱拆開，檢查底部有沒有受潮。
+    expect: pass
+    note: 審查第三輪（09-28）字面語料
+  - id: D09a-pass-051
+    text: 老師把問卷拆開，重新裝訂散掉的紙頁。
+    expect: pass
+    note: 審查第三輪（09-28）字面語料
+  - id: D09a-pass-052
+    text: 電工把電線拆開，確認內部銅芯。
+    expect: pass
+    note: 審查第三輪（09-28）字面語料
+  - id: D09a-pass-053
+    text: 技師把壓力錶拆開，清理卡住的指針。
+    expect: pass
+    note: 審查第三輪（09-28）字面語料
+  - id: D09a-pass-054
+    text: 老師把問題卡拆開，發給各組學生。
+    expect: pass
+    note: 審查第三輪（09-28）字面語料
+  - id: D09a-pass-055
+    text: 教具管理員把情緒卡拆開，按顏色排成幾疊。
+    expect: pass
+    note: 審查第三輪（09-28）字面語料
+  - id: D09a-pass-056
+    text: 靶場管理員把目標板拆開，換上新的靶紙。
+    expect: pass
+    note: 審查第三輪（09-28）字面語料
+  - id: D09a-pass-057
+    text: 在遊戲中，機器人接住你的情緒球後會亮燈。
+    expect: pass
+    note: 審查第三輪（09-28）字面語料
+  - id: D09a-pass-058
+    text: 教練接住了孩子的感受球，再把球拋回去。
+    expect: pass
+    note: 審查第三輪（09-28）字面語料
+  - id: D09a-pass-059
+    text: 實驗員接住大家的眼淚樣本瓶，再放進冷藏箱。
+    expect: pass
+    note: 審查第三輪（09-28）字面語料

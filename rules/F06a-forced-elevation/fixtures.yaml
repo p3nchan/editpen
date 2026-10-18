@@ -1,0 +1,97 @@
+schema: 1
+rule: F06a
+fixtures:
+  - id: F06a-fail-001
+    text: 前面三輪測試都得到相同結果。總結來說，這次改動可以按原定時間發布。
+    expect: fail
+    spans: [[14, 19]]
+  - id: F06a-fail-002
+    text: 訪談與問卷都指向相同問題。綜上所述，團隊應先修正登入流程。
+    expect: fail
+    spans: [[13, 18]]
+  - id: F06a-fail-003
+    text: 這不僅是一次介面調整，更是團隊重新梳理責任邊界的機會。
+    expect: fail
+    spans: [[0, 27]]
+  - id: F06a-pass-001
+    text: 本報告依序整理訪談紀錄與成本估算，最後列出續辦計畫所需的三項條件。
+    expect: pass
+    note: 正式報告具體交代結語內容，沒有套用總結標記
+  - id: F06a-pass-002
+    text: 修正上線後，客服一週內沒有再收到同類回報。
+    expect: pass
+    note: 以具體結果直接收尾
+  - id: F06a-fail-004
+    text: |-
+      AI 工具不是讓我們少寫，而是讓我們寫得更好。
+
+      總結來說，善用 AI，就是賦能每一位創作者。
+    expect: fail
+    spans: [[25, 30]]
+  - id: F06a-pass-003
+    text: 這不僅是我第一次參加馬拉松，也是我第一次跑完全程。
+    expect: pass
+  - id: F06a-pass-004
+    text: 這不僅是台灣首座離岸風場，也是亞洲第一個商轉的案例。
+    expect: pass
+  - id: F06a-pass-005
+    text: 總的來說，第一季營收成長一成。接著來看第二季的成本結構。
+    expect: pass
+    note: 開頭的總結句
+  - id: F06a-pass-006
+    text: 總而言之，這家店的牛肉麵值得再來，但停車真的不方便。
+    expect: pass
+    note: 單句短評
+  - id: F06a-pass-007
+    text: |-
+      第一季營收成長一成，主要來自新客戶。總的來說，成長集中在北部。
+
+      第二季的成本結構不同。原料上漲兩成，運費也跟著調高。
+
+      第三季還沒結束，下個月再更新。
+    expect: pass
+    note: 總結標記在文章中段
+  - id: F06a-pass-008
+    text: 這不僅是民事糾紛，更是刑事案件。
+    expect: pass
+    note: 審查探針（09-27）：兩半是不同的法律類別
+  - id: F06a-pass-009
+    text: |-
+      檢方調閱帳冊後，發現公司長期虛報成本。
+
+      律師說，這不僅是民事糾紛，更是刑事案件。
+    expect: pass
+    note: 收尾位置，但 Y 是具體類別
+  - id: F06a-pass-010
+    text: |-
+      這不只是效率的提升，更是思維方式的轉變。
+
+      第一週我們先把審稿流程改成兩段式。第二週開始，每篇稿子都附上來源清單。
+
+      一個月後，退稿率從三成降到一成。
+    expect: pass
+    note: 升華句在文章開頭，不是收尾
+  - id: F06a-fail-005
+    text: 這不只是效率的提升，更是思維方式的轉變。
+    expect: fail
+    spans: [[0, 20]]
+    note: 審查探針（09-27）AI 制式句型
+  - id: F06a-fail-006
+    text: 這不僅是補助款，更是災民重建生活的機會。
+    expect: fail
+    spans: [[0, 20]]
+    note: 審查探針 r2（09-27）：實質主張，目前仍會提出（已知誤判；規則待轉 experimental，由預設值決定，不再修 regex）
+  - id: F06a-fail-007
+    text: 這不只是增加班次，更是偏鄉居民就醫的機會。
+    expect: fail
+    spans: [[0, 21]]
+    note: 審查探針 r2（09-27）：實質主張，目前仍會提出（已知誤判；規則待轉 experimental，由預設值決定，不再修 regex）
+  - id: F06a-fail-008
+    text: 這不只是修繕老屋，更是保留地方記憶的責任。
+    expect: fail
+    spans: [[0, 21]]
+    note: 審查探針 r2（09-27）：實質主張，目前仍會提出（已知誤判；規則待轉 experimental，由預設值決定，不再修 regex）
+  - id: F06a-pass-011
+    text: 這不僅是保存老屋，更是社區文化的延續。
+    expect: pass
+    note: 審查探針 r2（09-27）：「延續」不在名詞清單，目前不提出

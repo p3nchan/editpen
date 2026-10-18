@@ -1,0 +1,190 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://editpen.dev/schema/rule.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "slug",
+    "feature",
+    "title",
+    "scope",
+    "status",
+    "detector_validity",
+    "kind",
+    "severity",
+    "message",
+    "detector",
+    "provenance",
+    "evidence",
+    "variants",
+    "false_positives",
+    "measurement"
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[A-Z][0-9]{2}[a-z]$" },
+    "slug": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "feature": { "type": "string", "pattern": "^[A-Z][0-9]{2}$" },
+    "title": { "type": "string", "minLength": 1 },
+    "scope": { "enum": ["core", "core-candidate", "zh-tw", "experimental"] },
+    "status": {
+      "enum": [
+        "measured-AI",
+        "measured-translationese",
+        "replicable",
+        "hypothesis",
+        "contradicted"
+      ]
+    },
+    "detector_validity": {
+      "enum": ["untested", "precision-gate-passed", "precision-gate-failed"]
+    },
+    "kind": { "enum": ["pattern", "density", "metric"] },
+    "severity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default"],
+      "properties": {
+        "default": { "enum": ["error", "warn", "info", "off"] }
+      }
+    },
+    "message": { "type": "string", "minLength": 1 },
+    "message_en": { "type": "string", "minLength": 1 },
+    "detector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["engine"],
+      "properties": {
+        "engine": { "enum": ["regex", "tokens", "builtin"] },
+        "unit": { "enum": ["sentence", "paragraph", "document"] },
+        "patterns": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "regex": { "type": "string", "minLength": 1 },
+              "flags": { "type": "string", "pattern": "^[dgimsuvy]*$" },
+              "lexicon": { "type": "string", "minLength": 1 },
+              "tokens": { "type": "array" }
+            },
+            "anyOf": [
+              { "required": ["regex"] },
+              { "required": ["lexicon"] },
+              { "required": ["tokens"] }
+            ]
+          }
+        },
+        "threshold": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "per": { "type": "number", "exclusiveMinimum": 0 },
+            "chars": { "type": "boolean" },
+            "han": { "type": "boolean" },
+            "count": { "type": "boolean" },
+            "max": { "type": "number" },
+            "min": { "type": "number" }
+          }
+        },
+        "builtin": { "type": "string", "minLength": 1 },
+        "params": { "type": "object" },
+        "exclude": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "regex"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "regex": { "type": "string", "minLength": 1 },
+              "flags": { "type": "string", "pattern": "^[dgimsuvy]*$" }
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "type": ["string", "number", "boolean", "null"] }
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "role", "grade", "claim", "direction", "variant"],
+        "properties": {
+          "source": { "type": "string", "pattern": "^S[0-9]{3}$" },
+          "role": { "enum": ["basis", "support"] },
+          "grade": { "enum": ["A", "B", "C"] },
+          "claim": { "type": "string", "minLength": 1 },
+          "direction": { "enum": ["up", "down", "mixed", "unknown"] },
+          "variant": { "enum": ["zh-CN", "zh-TW", "both", "none"] }
+        }
+      }
+    },
+    "variants": {
+      "type": "object",
+      "additionalProperties": { "type": "object" }
+    },
+    "false_positives": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["context", "fixtures"],
+        "properties": {
+          "context": { "type": "string", "minLength": 1 },
+          "fixtures": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "measurement": {
+      "type": ["object", "null"]
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "pattern" } } },
+      "then": {
+        "properties": {
+          "detector": {
+            "required": ["engine", "unit", "patterns"],
+            "properties": { "engine": { "enum": ["regex", "tokens"] } }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "density" } } },
+      "then": {
+        "properties": {
+          "detector": {
+            "required": ["engine", "unit", "patterns", "threshold"],
+            "properties": { "engine": { "const": "regex" } }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "metric" } } },
+      "then": {
+        "properties": {
+          "detector": {
+            "required": ["engine", "builtin", "params", "threshold"],
+            "properties": { "engine": { "const": "builtin" } }
+          }
+        }
+      }
+    }
+  ]
+}

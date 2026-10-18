@@ -1,0 +1,35 @@
+schema: 1
+rule: D04a
+fixtures:
+  - id: D04a-fail-001
+    text: 這套軟件的數據庫每天凌晨備份一次。
+    expect: fail
+    spans: [[2, 4], [5, 8]]
+  - id: D04a-fail-002
+    text: 新硬件到貨後，工程師會先跑一輪壓力測試。
+    expect: fail
+    spans: [[1, 3]]
+  - id: D04a-pass-001
+    text: 我們先釐清最棘手的問題，再安排能負責到底的人。
+    expect: pass
+  - id: D04a-pass-002
+    text: 中國大陸說軟件，台灣通常說軟體。
+    expect: pass
+    note: 審查探針（09-27）：討論用詞本身
+  - id: D04a-pass-003
+    text: 台灣一般說軟體，中國大陸說軟件。
+    expect: pass
+    note: 審查探針（09-27）：討論用詞本身
+  - id: D04a-pass-004
+    text: 他說：「這套軟件很方便。」她補充：“我不喜歡抓手這個詞。”備註：`硬件`。
+    expect: pass
+    note: 審查探針（09-27）：引號與行內程式碼受保護
+  - id: D04a-fail-003
+    text: 這份數據庫已經更新。
+    expect: fail
+    spans: [[2, 5]]
+    note: 審查探針 r2（09-27）：教育部對照表詞
+  - id: D04a-pass-005
+    text: 他說軟件太貴，想改用免費軟體。
+    expect: pass
+    note: 審查探針 r2（09-27）：已知漏網，「說」後的詞一律視為討論用詞

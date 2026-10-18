@@ -1,0 +1,126 @@
+schema: 1
+rule: D04b
+fixtures:
+  - id: D04b-fail-001
+    text: 這次改版先找出能推動專案的抓手，再排定負責人。
+    expect: fail
+    spans: [[13, 15]]
+  - id: D04b-fail-002
+    text: 客服把回報、修正和驗證串成閉環，避免同一問題反覆出現。
+    expect: fail
+    spans: [[13, 15]]
+  - id: D04b-fail-003
+    text: 總結來說，善用 AI，就是賦能每一位創作者。
+    expect: fail
+    spans: [[13, 15]]
+  - id: D04b-fail-004
+    text: 我們得先找到抓手，才能推進下一步。
+    expect: fail
+    spans: [[6, 8]]
+  - id: D04b-fail-005
+    text: 這份提案少了一個抓手。
+    expect: fail
+    spans: [[8, 10]]
+  - id: D04b-pass-001
+    text: 中國顧問把這種做法稱為「抓手」。
+    expect: pass
+    note: 引用來源中的詞受保護
+  - id: D04b-pass-002
+    text: 我們先釐清最棘手的問題，再安排能負責到底的人。
+    expect: pass
+  - id: D04b-pass-003
+    text: 他伸手抓手機看時間。
+    expect: pass
+    note: 抓＋手機
+  - id: D04b-pass-004
+    text: 避免長時間待在密閉環境。
+    expect: pass
+    note: 密閉＋環境
+  - id: D04b-pass-005
+    text: 在封閉環境中工作的人容易頭痛。
+    expect: pass
+    note: 封閉＋環境
+  - id: D04b-pass-006
+    text: 他的天賦能力很強，但需要更多練習。
+    expect: pass
+    note: 天賦＋能力
+  - id: D04b-pass-007
+    text: 媽媽一把抓手臂，把孩子拉回人行道。
+    expect: pass
+    note: 抓＋手臂
+  - id: D04b-pass-008
+    text: 市府宣布關閉環保公園的舊停車場。
+    expect: pass
+    note: 關閉＋環保
+  - id: D04b-pass-009
+    text: 每天早上幫母親測血壓。
+    expect: pass
+    note: 已移除的詞（親測）不再比對
+  - id: D04b-pass-010
+    text: 台股尾盤收復盤中跌點。
+    expect: pass
+    note: 已移除的詞（復盤）不再比對
+  - id: D04b-pass-011
+    text: 以太坊區塊鏈路線圖今年又更新了。
+    expect: pass
+    note: 已移除的詞（鏈路）不再比對
+  - id: D04b-pass-012
+    text: 與確診者接觸達十五分鐘以上即列為密切接觸者。
+    expect: pass
+    note: 已移除的詞（觸達）不再比對
+  - id: D04b-pass-013
+    text: 敲開堅硬核桃殼需要專用工具。我剛需要用錢，他就把錢還我了。股價在急跌後恢復盤整格局。
+    expect: pass
+    note: 已移除的詞（硬核、剛需、復盤）不再比對
+  - id: D04b-pass-014
+    text: 寶特瓶瓶到瓶閉環回收在台灣已經運作多年。
+    expect: pass
+    note: 台灣循環經濟用語
+  - id: D04b-pass-015
+    text: 這台機器用閉環控制來穩定轉速。
+    expect: pass
+    note: 工程用語
+  - id: D04b-pass-016
+    text: 大陸說的抓手，台灣一般說著力點。
+    expect: pass
+    note: 討論用詞本身
+  - id: D04b-pass-017
+    text: 工廠新增兩組機械抓手，負責把零件放上輸送帶。
+    expect: pass
+    note: 機械夾爪
+  - id: D04b-pass-018
+    text: 中國顧問把這種做法稱為『抓手』。
+    expect: pass
+    note: 「稱為」後的討論用詞
+  - id: D04b-pass-019
+    text: 中國顧問把這種做法稱為“抓手”。
+    expect: pass
+    note: 「稱為」後的討論用詞
+  - id: D04b-pass-020
+    text: 她抓手帕擦汗，接著拿水壺喝水。
+    expect: pass
+    note: 審查探針（09-27）：抓＋手帕
+  - id: D04b-pass-021
+    text: 小男孩抓手電筒照向床底。
+    expect: pass
+    note: 抓＋手電筒
+  - id: D04b-pass-022
+    text: 他說：「這套軟件很方便。」她補充：“我不喜歡抓手這個詞。”備註：`硬件`。
+    expect: pass
+    note: 審查探針（09-27）：引號與行內程式碼受保護
+  - id: D04b-pass-023
+    text: 過馬路時請抓手，別抓衣服。
+    expect: pass
+    note: 審查探針 r2（09-27）：抓＋手（動詞加受詞），不再只憑後面的標點判定
+  - id: D04b-pass-024
+    text: 她抓手臂上的蚊子，卻被叮了一口。
+    expect: pass
+    note: 審查探針 r2（09-27）：抓＋手臂
+  - id: D04b-pass-025
+    text: 爸爸抓手套給孩子，準備出門。
+    expect: pass
+    note: 審查探針 r2（09-27）：抓＋手套
+  - id: D04b-pass-026
+    text: 建立工作抓手，才能分配責任。
+    expect: pass
+    note: 審查探針 r2（09-27）：已知漏網；拿掉只看標點的判定後不再提出

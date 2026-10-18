@@ -1,0 +1,66 @@
+schema: 1
+rule: D01a
+fixtures:
+  - id: D01a-fail-001
+    text: 這不是工具，而是方法。
+    expect: fail
+    spans: [[1, 10]]
+  - id: D01a-fail-002
+    text: 關鍵不在於模型大小，而在於資料品質。
+    expect: fail
+    spans: [[0, 17]]
+  - id: D01a-fail-003
+    text: 與其追求更多功能，不如先修好錯誤。
+    expect: fail
+    spans: [[0, 16]]
+  - id: D01a-fail-004
+    text: 這並非短暫波動，而是長期趨勢。
+    expect: fail
+    spans: [[1, 14]]
+  - id: D01a-fail-005
+    text: 問題不在速度，而在於結果是否可靠。
+    expect: fail
+    spans: [[0, 16]]
+  - id: D01a-pass-001
+    text: 他說：「這不是工具，而是方法。」
+    expect: pass
+    note: 引述句受保護
+  - id: D01a-pass-002
+    text: 判斷成功要看三個訊號，不是 stdout 最後一行。
+    expect: pass
+    note: 句尾釐清
+  - id: D01a-pass-003
+    text: 社論比較兩案的成本與風險，最後支持第二案。
+    expect: pass
+    note: 編輯性比較，沒有套用否定反轉框
+  - id: D01a-fail-006
+    text: 我們不是在改善流程，而是在重塑未來。
+    expect: fail
+    spans: [[2, 17]]
+    note: 審查探針（09-27）AI 制式句型
+  - id: D01a-fail-007
+    text: 這不是一個普通的筆記 App——而是你的第二大腦。
+    expect: fail
+    spans: [[1, 24]]
+    note: 用破折號代替逗號的「不是 X，而是 Y」句型（09-28 Pingu 補充）
+  - id: D01a-fail-008
+    text: 寫筆記不只是記錄，而是思考的延伸。
+    expect: fail
+    spans: [[3, 16]]
+    note: 「不只是 X，而是 Y」（09-28 Pingu 補充）
+  - id: D01a-pass-004
+    text: 這次改版不只是換了介面，還把同步速度提高了一倍。
+    expect: pass
+    note: 「不只是…，還…」是一般遞進句，不是「不是 X，而是 Y」句型
+  - id: D01a-pass-005
+    text: 寫筆記不只是記錄，也是整理想法的過程。
+    expect: pass
+    note: 「不只是…，也是／更是」屬於 F06a 的範圍，這條不抓
+  - id: D01a-pass-006
+    text: 這不是第一次——去年夏天也發生過一樣的事。
+    expect: pass
+    note: 破折號後面是補充說明，沒有「而是」
+  - id: D01a-pass-007
+    text: 這不是我的錯——。而是他沒說清楚。
+    expect: pass
+    note: 破折號分支不跨句

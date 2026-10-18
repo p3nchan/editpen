@@ -1,0 +1,81 @@
+schema: 1
+rule: F05a
+fixtures:
+  - id: F05a-fail-001
+    text: 在當今數位工具快速變動的時代，我們每季都重新檢查工作流程。
+    expect: fail
+    spans: [[0, 15]]
+  - id: F05a-fail-002
+    text: 隨著遠距協作工具的普及，編輯每天收到的訊息比兩年前更多。
+    expect: fail
+    spans: [[0, 12]]
+  - id: F05a-fail-003
+    text: 在生成式模型快速更新的浪潮下，團隊決定縮短測試週期。
+    expect: fail
+    spans: [[0, 15]]
+  - id: F05a-pass-001
+    text: 市府今天公布新版防災地圖，新增十二處臨時避難點。
+    expect: pass
+    note: 新聞導言直接交代事件，沒有空泛時代框架
+  - id: F05a-pass-002
+    text: 去年我開始用 Claude Code，第一週只讓它整理測試結果。
+    expect: pass
+    note: 以具體時間和經驗起句
+  - id: F05a-fail-004
+    text: 在當今快速變遷的數位時代，寫作早已不只是表達。
+    expect: fail
+    spans: [[0, 13]]
+  - id: F05a-fail-005
+    text: 隨著人工智慧技術的快速發展，越來越多企業開始導入自動化客服。
+    expect: fail
+    spans: [[0, 14]]
+  - id: F05a-pass-003
+    text: 隨著劇情發展，觀眾才慢慢發現兇手另有其人。
+    expect: pass
+  - id: F05a-pass-004
+    text: 隨著病情發展，醫師建議她改用口服藥。
+    expect: pass
+  - id: F05a-pass-005
+    text: 隨著孩子進步，我也調整了陪讀的方式。隨著電動機車普及，加油站開始在站內加裝換電站。
+    expect: pass
+  - id: F05a-pass-006
+    text: 在這樣的環境下，他仍然考上了台大醫學系。
+    expect: pass
+  - id: F05a-pass-007
+    text: 在少子化的趨勢下，全台今年又有三所大學停招。
+    expect: pass
+  - id: F05a-pass-008
+    text: 我們先看數據。隨著科技的發展，現金交易比例降到三成。
+    expect: pass
+    note: 段落中間，不是開場
+  - id: F05a-pass-009
+    text: 隨著經濟發展，彰化製造業的用水需求增加。
+    expect: pass
+    note: 審查探針（09-27）：新聞的具體因果
+  - id: F05a-pass-010
+    text: 隨著產業發展，園區周邊的租屋需求也跟著上升。
+    expect: pass
+  - id: F05a-fail-006
+    text: 在當今瞬息萬變的數位時代，我們需要重新思考教育的未來。
+    expect: fail
+    spans: [[0, 13]]
+    note: 審查探針（09-27）AI 制式句型
+  - id: F05a-fail-007
+    text: 隨著社群媒體的蓬勃發展，每個人都能成為內容創作者。
+    expect: fail
+    spans: [[0, 12]]
+  - id: F05a-fail-008
+    text: 隨著網路的普及，偏鄉診所也能提供線上掛號。
+    expect: fail
+    spans: [[0, 8]]
+    note: 審查探針 r2（09-27）：具體的因果背景，目前仍會提出（已知誤判；規則待轉 experimental，不再修 regex）
+  - id: F05a-fail-009
+    text: 隨著數位工具的普及，農民開始用手機記錄產量。
+    expect: fail
+    spans: [[0, 10]]
+    note: 審查探針 r2（09-27）：具體的因果背景，目前仍會提出（已知誤判；規則待轉 experimental，不再修 regex）
+  - id: F05a-fail-010
+    text: 隨著AI技術的發展，醫院新增影像判讀流程。
+    expect: fail
+    spans: [[0, 10]]
+    note: 審查探針 r2（09-27）：具體的因果背景，目前仍會提出（已知誤判；規則待轉 experimental，不再修 regex）

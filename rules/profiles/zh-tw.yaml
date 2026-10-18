@@ -1,0 +1,6 @@
+id: zh-tw
+extends: zh
+name: 台灣中文
+include:
+  scope: [zh-tw]
+candidate_ceiling: warn

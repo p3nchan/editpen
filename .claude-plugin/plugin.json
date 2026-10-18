@@ -1,0 +1,12 @@
+{
+  "name": "editpen",
+  "version": "0.1.0",
+  "description": "Chinese writing linter skill: lint a draft, fix only the flagged spans, re-check.",
+  "author": {
+    "name": "小企鵝 Penchan",
+    "url": "https://penchan.co"
+  },
+  "license": "MIT AND CC-BY-4.0",
+  "repository": "https://github.com/p3nchan/editpen",
+  "homepage": "https://penchan.co/editpen/"
+}

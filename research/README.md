@@ -1,0 +1,3 @@
+# Research
+
+The files in this directory (`ledger.md`, `feature-map.md`, `hypothesis-cards.md`, `practitioner-survey.md`, and this README) are licensed under the Creative Commons Attribution 4.0 International licence (CC BY 4.0); see `../LICENSE-RESEARCH`. Everything else in this repository, including the code in `src/`, the rules in `rules/`, and their fixtures, is licensed under the MIT licence; see `../LICENSE`. Licence columns in the ledger record our own assessment of each source's terms, not legal advice. Third-party works cited in these files remain under their own terms; short example sentences quoted in fixtures carry a source note (for example, the Ministry of Education punctuation handbook, S147, in `rules/M01a-em-dash/fixtures.yaml`).

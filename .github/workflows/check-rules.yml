@@ -1,0 +1,18 @@
+name: Check rules
+
+on:
+  push:
+
+jobs:
+  check-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      # pretest builds; test = engine checks, parity, perf budget, check-rules
+      - run: npm test

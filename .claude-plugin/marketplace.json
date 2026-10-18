@@ -1,0 +1,14 @@
+{
+  "name": "editpen",
+  "owner": {
+    "name": "小企鵝 Penchan"
+  },
+  "description": "Chinese writing linter skill: lint a draft, fix only the flagged spans, re-check.",
+  "plugins": [
+    {
+      "name": "editpen",
+      "source": "./",
+      "description": "Chinese writing linter skill: lint a draft, fix only the flagged spans, re-check."
+    }
+  ]
+}

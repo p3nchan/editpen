@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://editpen.dev/schema/fixtures.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "rule", "fixtures"],
+  "properties": {
+    "schema": { "const": 1 },
+    "rule": { "type": "string", "pattern": "^[A-Z][0-9]{2}[a-z]$" },
+    "fixtures": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "text", "expect"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "text": { "type": "string", "minLength": 1 },
+          "expect": { "enum": ["pass", "fail"] },
+          "spans": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": [
+                { "type": "integer", "minimum": 0 },
+                { "type": "integer", "minimum": 0 }
+              ],
+              "additionalItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "note": { "type": "string" }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "expect": { "const": "fail" } } },
+            "then": { "required": ["spans"], "properties": { "spans": { "minItems": 1 } } }
+          }
+        ]
+      }
+    }
+  }
+}

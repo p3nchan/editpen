@@ -1,0 +1,5 @@
+id: zh
+name: 中文（跨變體）
+include:
+  scope: [core, core-candidate]
+candidate_ceiling: info
