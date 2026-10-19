@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { access, readFile, readdir } from "node:fs/promises";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { Ajv, type AnySchema, type ErrorObject } from "ajv";
 import { Command } from "commander";
@@ -13,6 +14,9 @@ import { effectiveSeverity, severityCeiling } from "./engine/severity.js";
 import type { Finding, SourceSpan } from "./engine/types.js";
 import { formatHuman } from "./formats/human.js";
 import { formatJson } from "./formats/json.js";
+
+// dist/cli.js and src/cli.ts both sit one level below package.json.
+const { version: pkgVersion } = createRequire(import.meta.url)("../package.json") as { version: string };
 
 // The regex safety gate is a heuristic (src/engine/regex-safety.ts), not a
 // timing guarantee: a custom rules directory is trusted input.
@@ -284,7 +288,7 @@ function collectIds(value: string, previous: string[]): string[] {
 }
 
 const program = new Command();
-program.name("editpen").description("Evidence-backed Chinese writing linter").version("0.0.1");
+program.name("editpen").description("Evidence-backed Chinese writing linter").version(pkgVersion);
 
 program
   .command("lint")
