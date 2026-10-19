@@ -25,3 +25,27 @@ fixtures:
     text: 他常說：「白話講就是這樣。」
     expect: pass
     note: 引文受保護
+  - id: D09b-pass-005
+    text: 老師用白話講解這個公式的由來。
+    expect: pass
+    note: 「白話講解」是複合詞，不在規則範圍
+  - id: D09b-pass-006
+    text: 這份白話講義適合初學者自學。
+    expect: pass
+    note: 「白話講義」是複合詞，不在規則範圍
+  - id: D09b-pass-007
+    text: 週末有一場白話講座，介紹基本理財。
+    expect: pass
+    note: 「白話講座」是複合詞，不在規則範圍
+  - id: D09b-pass-008
+    text: 這本書用白話講述台灣的歷史。
+    expect: pass
+    note: 「白話講述」是複合詞，不在規則範圍
+  - id: D09b-pass-009
+    text: 他開了一個白話講堂頻道，談法律常識。
+    expect: pass
+    note: 「白話講堂」是複合詞，不在規則範圍
+  - id: D09b-pass-010
+    text: 她習慣白話講課，學生都聽得懂。
+    expect: pass
+    note: 「白話講課」是複合詞，不在規則範圍

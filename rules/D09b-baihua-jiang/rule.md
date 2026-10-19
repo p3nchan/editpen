@@ -9,14 +9,14 @@ detector_validity: untested
 kind: pattern
 severity:
   default: info
-message: 編修建議：「白話講」可以改成「簡單說」，讀起來更自然。這不代表文字出自 AI；如果這是作者刻意的口語風格，就保留。
-message_en: Editing suggestion. Consider 簡單說 in place of 白話講. This is not a sign of AI authorship; keep it if it is the author's deliberate colloquial style.
+message: 編修建議：「白話講」可以改成「簡單說」；「用白話講」整個改成「簡單說」，不留「用」。讀起來更自然。這不代表文字出自 AI；如果這是作者刻意的口語風格，就保留。
+message_en: Editing suggestion. Consider 簡單說 in place of 白話講; replace 用白話講 as a whole with 簡單說 (drop 用). This is not a sign of AI authorship; keep it if it is the author's deliberate colloquial style.
 detector:
   engine: regex
   unit: sentence
   patterns:
     - name: baihua-jiang
-      regex: '白話講'
+      regex: '白話講(?![解義座述堂課])'
   exclude: []
 provenance:
   derived_from: Penchan's editing observation (2026-10-19)
@@ -33,6 +33,8 @@ variants:
 false_positives:
   - context: 「白話文」「講白話」「白話來說」等其他含「白話」的說法
     fixtures: [D09b-pass-001, D09b-pass-002, D09b-pass-003]
+  - context: 「白話講解」「白話講義」「白話講座」「白話講述」「白話講堂」「白話講課」這類「白話＋講X」複合詞
+    fixtures: [D09b-pass-005, D09b-pass-006, D09b-pass-007, D09b-pass-008, D09b-pass-009, D09b-pass-010]
   - context: 引號裡的例句
     fixtures: [D09b-pass-004]
 measurement: null
@@ -40,7 +42,7 @@ measurement: null
 
 ## 抓什麼
 
-只抓「白話講」這三個字，例如「白話講就是…」「用白話講，…」。
+只抓「白話講」這三個字，例如「白話講就是…」「用白話講，…」。後面緊接「解、義、座、述、堂、課」時不提出（「白話講解」「白話講義」等）。
 
 ## 證據
 
@@ -49,12 +51,14 @@ measurement: null
 ## 什麼時候不算
 
 - 「白話文」「講白話」「白話來說」等其他含「白話」的說法，不提出。
+- 「白話講解」「白話講義」「白話講座」「白話講述」「白話講堂」「白話講課」是「白話＋講X」的複合詞，不提出。
 - 「」『』“”‘’引文與行內程式碼裡的例句由保護機制排除。
 - 如果「白話講」是作者刻意的口語風格，請直接保留。
 
 ## 怎麼改
 
 - 白話講 → 簡單說
+- 用白話講 → 簡單說（整個換掉，不留「用」）
 
 ## 量測
 
