@@ -135,7 +135,7 @@ check("browser disable", browserIds.join() === "F09a", browserIds.join());
 // decision-rule-defaults.md option 1). Editing src/engine/defaults.ts without
 // updating these lists fails here, in the CLI rule list and the browser cards.
 const expectedOn = ["D01a", "D04a", "M01b"];
-const expectedExperimental = ["D02a", "D04b", "D09a", "F02a", "F05a", "F06a", "F07a", "F08a", "F09a", "F11a", "F26a", "M01a"];
+const expectedExperimental = ["D02a", "D04b", "D09a", "D09b", "F02a", "F05a", "F06a", "F07a", "F08a", "F09a", "F11a", "F26a", "M01a"];
 const allRules = await node.loadRules(path.join(root, "rules"), "zh-tw");
 const byDefault = (state: string): string =>
   allRules.filter((rule) => node.ruleDefault(rule.id) === state).map((rule) => rule.id).sort().join();

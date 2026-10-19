@@ -18,6 +18,7 @@ export const ruleDefaults: Readonly<Record<string, RuleDefault>> = {
   D04a: "on",
   D04b: "experimental",
   D09a: "experimental",
+  D09b: "experimental",
   F02a: "experimental",
   F05a: "experimental",
   F06a: "experimental",

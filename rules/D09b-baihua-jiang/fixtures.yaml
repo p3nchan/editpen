@@ -1,0 +1,27 @@
+schema: 1
+rule: D09b
+fixtures:
+  - id: D09b-fail-001
+    text: 白話講就是這樣。
+    expect: fail
+    spans: [[0, 3]]
+  - id: D09b-fail-002
+    text: 用白話講，這個功能只是幫你自動存檔。
+    expect: fail
+    spans: [[1, 4]]
+  - id: D09b-pass-001
+    text: 這篇文章用白話文寫成，讀起來很輕鬆。
+    expect: pass
+    note: 「白話文」不在規則範圍
+  - id: D09b-pass-002
+    text: 我們講白話一點，這就是漲價。
+    expect: pass
+    note: 「講白話」不在規則範圍
+  - id: D09b-pass-003
+    text: 白話來說，這個方案比較便宜。
+    expect: pass
+    note: 「白話來說」不在規則範圍
+  - id: D09b-pass-004
+    text: 他常說：「白話講就是這樣。」
+    expect: pass
+    note: 引文受保護
