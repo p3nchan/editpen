@@ -42,7 +42,8 @@
   },
   "scripts": {
     "compile-data": "tsx scripts/compile-browser-data.ts",
-    "build": "npm run compile-data && tsc && tsx scripts/bundle-browser.ts",
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && npm run compile-data && tsc && tsx scripts/bundle-browser.ts",
+    "prepack": "npm run build",
     "typecheck": "npm run compile-data && tsc --noEmit && tsc --noEmit -p tsconfig.scripts.json",
     "check-rules": "tsx src/cli.ts check-rules",
     "check-parity": "tsx scripts/check-parity.ts",
