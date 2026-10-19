@@ -13,15 +13,13 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           # trusted publishing needs Node >= 22.14 and npm >= 11.5.1;
           # setup-node v4 caches nothing unless `cache:` is set
           node-version: 24
           registry-url: 'https://registry.npmjs.org'
-      - run: npm install -g npm@^11.5.1
-      - run: npm ci
       - name: Tag matches package.json version
         run: |
           version=$(node -p "require('./package.json').version")
@@ -29,6 +27,8 @@ jobs:
             echo "Tag $GITHUB_REF_NAME does not match package.json version $version"
             exit 1
           fi
+      - run: npm install -g npm@11.21.1
+      - run: npm ci
       # pretest builds; test = engine checks, parity, perf budget, check-rules
       - run: npm test
       # prepack rebuilds dist; provenance is automatic via OIDC
