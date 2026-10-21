@@ -28,8 +28,22 @@ function compile(regex: string, flags = "u"): RegExp {
   return value;
 }
 
+// Per pattern object, so the hot loop (every unit x every pattern) skips
+// building and hashing the string key above.
+const byItem = new WeakMap<object, RegExp>();
+
+function cachedFor(item: object, regex: string, flags?: string): RegExp {
+  let value = byItem.get(item);
+  if (value === undefined) {
+    value = compile(regex, flags);
+    byItem.set(item, value);
+  }
+  value.lastIndex = 0;
+  return value;
+}
+
 function isExcluded(text: string, excludes: readonly DetectorExclude[]): boolean {
-  return excludes.some((exclude) => compile(exclude.regex, exclude.flags).test(text));
+  return excludes.some((exclude) => cachedFor(exclude, exclude.regex, exclude.flags).test(text));
 }
 
 /**
@@ -54,7 +68,7 @@ export function runRegexDetector(
     if (pattern.regex === undefined) {
       continue;
     }
-    const regex = compile(pattern.regex, pattern.flags);
+    const regex = cachedFor(pattern, pattern.regex, pattern.flags);
     for (let match = regex.exec(text); match !== null; match = regex.exec(text)) {
       const start = offset + match.index;
       const end = start + match[0].length;
