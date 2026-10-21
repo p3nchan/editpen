@@ -249,7 +249,9 @@ check("D01a: a frame starting inside a quoted frame and running past it", quoted
 // Oracle: the regex detector reports exactly what a scan that resumes one
 // code point after every dropped match reports (the semantics before
 // protected matches could skip ahead), for every rule pattern plus synthetic
-// ones on quote-heavy texts, whole and cut into units.
+// ones on quote-heavy texts, whole and cut into units. "One code point"
+// advances like the detector: two units whenever the first is a high
+// surrogate, paired or lone.
 interface OraclePattern { name: string; regex: string; flags?: string }
 function oracleScan(text: string, pattern: OraclePattern, protection: ReturnType<typeof protectRanges>, offset: number): string[] {
   const regex = new RegExp(pattern.regex, [...new Set(`${pattern.flags ?? ""}gu`)].join(""));
@@ -265,7 +267,8 @@ function oracleScan(text: string, pattern: OraclePattern, protection: ReturnType
       dropped = end <= span.end || inner.exec(text.slice(0, span.end - offset)) !== null;
     }
     if (dropped) {
-      regex.lastIndex = match.index + ((text.codePointAt(match.index) ?? 0) > 0xffff ? 2 : 1);
+      const unit = text.charCodeAt(match.index);
+      regex.lastIndex = match.index + (unit >= 0xd800 && unit <= 0xdbff ? 2 : 1);
       continue;
     }
     found.push(`${start}-${end}`);
@@ -280,6 +283,9 @@ const oraclePatterns: OraclePattern[] = [
   { name: "lookbehind dash", regex: "(?<=—)—+" },
   { name: "lazy any", regex: "甲.+?乙" },
   { name: "negated class", regex: "[^，。]+而是" },
+  { name: "lone high surrogate overlap", regex: "\ud800|b」c" },
+  { name: "lone low surrogate overlap", regex: "\udc00|b」c" },
+  { name: "paired surrogate overlap", regex: "𠀀|b」c" },
 ];
 const seenPatterns = new Set<string>();
 for (const profile of ["zh", "zh-tw", "penchan"]) {
@@ -311,6 +317,10 @@ const oracleTexts = [
   "「𠀀——𠀀」——𠀀「——",
   `「${"不是甲，而是乙。".repeat(20)}」不是丙，而是丁。`,
   "首先，「其次，此外」，然而「最後」。軟件「硬件」數據庫。",
+  "「\ud800b」c",
+  "「\udbffb」c",
+  "「\udc00b」c",
+  "「𠀀b」c",
 ];
 let oracleComparisons = 0;
 const oracleFailures: string[] = [];
@@ -333,6 +343,18 @@ for (const text of oracleTexts) {
 }
 check(`regex detector = per-code-point oracle (${oracleComparisons} comparisons)`, oracleFailures.length === 0,
   oracleFailures.slice(0, 5).join("; "));
+// A dropped match on a lone high surrogate resumes past the next unit (as
+// before the skip), so "b」c" right after it is never tried; a lone low or a
+// paired surrogate resumes at "b".
+for (const [label, text, regex, expected] of [
+  ["lone high", "「\ud800b」c", "\ud800|b」c", ""],
+  ["lone low", "「\udc00b」c", "\udc00|b」c", "2-5"],
+  ["paired", "「𠀀b」c", "𠀀|b」c", "3-6"],
+] as const) {
+  const found = runRegexDetector(text, [{ name: label, regex }], protectRanges(text), [], 0)
+    .map((m) => `${m.start}-${m.end}`).join();
+  check(`regex detector: ${label} surrogate in a quote before a straddling match`, found === expected, found);
+}
 
 // Non-prose blocks before the opening paragraph do not use up F12b's
 // one-paragraph budget.
@@ -396,10 +418,14 @@ const fmCases: [string, string, string][] = [
   ["sibling after a block scalar", "example: |\n  title: 不算\ntitle: yyds", "4:8:yyds"],
   ["indented comment after a plain scalar", "title: yyds\n  # comment", "2:8:yyds"],
   ["indented comment after a quoted scalar", "title: \"yyds\"\n  # comment", "2:9:yyds"],
-  ["comment line then a continuation", "title: 第一行\n  # comment\n  yyds", ""],
+  ["quoted multi-line value with a \"#\" line", "title: \"第一行\n  # yyds\n  yyds\"", ""],
+  ["sibling after a quoted multi-line value with a \"#\" line", "title: \"第一行\n  # 註解\n  續行\"\ndescription: yyds", "5:14:yyds"],
   ["\"#\" line in a selected block scalar", "description: |\n  # yyds\n  yyds", ""],
 ];
 for (const [label, yaml, expected] of fmCases) {
+  let yamlError = "";
+  try { parse(yaml); } catch (error) { yamlError = String(error); }
+  check(`frontmatter fixture is valid YAML: ${label}`, yamlError === "", yamlError);
   const doc = `---\n${yaml}\n---\n正文。`;
   const found = (await node.lint(doc, { profile: "penchan", ruleIds: ["D04c"] })).findings
     .map((f) => `${f.span.line}:${f.span.column}:${f.match}`).join("|");
