@@ -54,17 +54,29 @@ function sticky(item: object, regex: RegExp): RegExp {
   return value;
 }
 
+function nextCodePoint(text: string, index: number): number {
+  const unit = text.charCodeAt(index);
+  return index + (unit >= 0xd800 && unit <= 0xdbff ? 2 : 1);
+}
+
 /**
  * Whether protection drops a match at `index` in `text` (document offsets
- * `start`/`end`). Hard spans (code, URL, frontmatter, blockquote) drop any
+ * `start`/`end`): undefined when it is kept, else the `text` index to resume
+ * the search at. Hard spans (code, URL, frontmatter, blockquote) drop any
  * match that touches them. A quote drops only a match that lies inside it
  * (code or a URL inside the quote does not widen that to a veto): a match
  * that starts in a quote and runs past it is still inside when the same
  * pattern also matches there with the text cut at the quote's end (a quoted
  * example of the pattern followed by more text); otherwise it straddles the
  * quote and is kept, as is a match that starts before a quote.
+ *
+ * Resume points: a match starting inside a hard span resumes at its end
+ * (every match starting there touches it); a match wholly inside a quote
+ * resumes at its own end, so a long protected run is scanned once, not once
+ * per suffix. Any other dropped match resumes one code point after its
+ * start, so it never hides a later unprotected match.
  */
-function isProtected(
+function protectedResume(
   item: object,
   regex: RegExp,
   text: string,
@@ -73,24 +85,25 @@ function isProtected(
   end: number,
   protection: Protection,
   offset: number,
-): boolean {
-  if (overlappingSpans(start, end, protection.hard).length > 0) {
-    return true;
+): number | undefined {
+  const hard = overlappingSpans(start, end, protection.hard)[0];
+  if (hard !== undefined) {
+    return hard.start <= start ? Math.max(hard.end - offset, nextCodePoint(text, index)) : nextCodePoint(text, index);
   }
   for (const span of overlappingSpans(start, end, protection.quotes)) {
     if (start < span.start) {
       continue;
     }
     if (end <= span.end) {
-      return true;
+      return end - offset;
     }
     const inner = sticky(item, regex);
     inner.lastIndex = index;
     if (inner.exec(text.slice(0, span.end - offset)) !== null) {
-      return true;
+      return nextCodePoint(text, index);
     }
   }
-  return false;
+  return undefined;
 }
 
 function isExcluded(text: string, excludes: readonly DetectorExclude[]): boolean {
@@ -99,9 +112,8 @@ function isExcluded(text: string, excludes: readonly DetectorExclude[]): boolean
 
 /**
  * All matches of `patterns` in `text` that protection does not drop (see
- * isProtected). After a dropped match the search resumes one code point
- * after where it started, so a protected hit never hides a later
- * unprotected one. `offset` shifts `text` indices into document offsets.
+ * protectedResume for where the search resumes after a dropped match).
+ * `offset` shifts `text` indices into document offsets.
  */
 export function runRegexDetector(
   text: string,
@@ -123,9 +135,13 @@ export function runRegexDetector(
     for (let match = regex.exec(text); match !== null; match = regex.exec(text)) {
       const start = offset + match.index;
       const end = start + match[0].length;
-      if (match[0].length === 0 || isProtected(pattern, regex, text, match.index, start, end, protection, offset)) {
-        const unit = text.charCodeAt(match.index);
-        regex.lastIndex = match.index + (unit >= 0xd800 && unit <= 0xdbff ? 2 : 1);
+      if (match[0].length === 0) {
+        regex.lastIndex = nextCodePoint(text, match.index);
+        continue;
+      }
+      const resume = protectedResume(pattern, regex, text, match.index, start, end, protection, offset);
+      if (resume !== undefined) {
+        regex.lastIndex = resume;
         continue;
       }
       findings.push({ start, end, text: match[0], pattern: pattern.name });

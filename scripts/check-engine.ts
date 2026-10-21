@@ -224,6 +224,16 @@ const penchanRun = await node.lint("他走了——再也沒回來。這個軟�
 const levels = penchanRun.findings.map((f) => `${f.ruleId}:${f.severity}:${f.housePolicy === true ? "house" : "evidence"}`).sort().join();
 check("penchan: M01c error as house policy, D04a keeps its evidence level", levels === "D04a:warn:evidence,M01c:error:house", levels);
 
+// A dropped match wholly inside a quote or starting in code resumes at its
+// end; a later unprotected match is still found.
+for (const [label, text] of [
+  ["after a quoted dash run", "「————」他走了——再也沒回來。"],
+  ["after a dash run in code", "`————`他走了——再也沒回來。"],
+]) {
+  const dashes = (await node.lint(text, { profile: "penchan", ruleIds: ["M01c"] })).findings.map((f) => f.match);
+  check(`M01c ${label}`, dashes.join("|") === "——", dashes.join("|"));
+}
+
 // penchan swaps F26a for F26b: short paragraphs (7+ chars) count there.
 const shortUniform = "今天去海邊看企鵝了。\n\n牠們排成一列走路。\n\n回家時天已經黑了。";
 const shortRun = (await node.lint(shortUniform, { profile: "penchan", experimental: true })).findings.map((f) => f.ruleId);

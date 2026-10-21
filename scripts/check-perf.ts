@@ -47,6 +47,9 @@ const cases: [string, string][] = [
   ["summary openers, no terminator", fill("\n總結來說，")],
   // Each match starts in a quote and runs past it: re-matched once per quote.
   ["quoted examples + tail, one line", fill("「不是甲乙，而是丙丁」後面，")],
+  // One closed quote around a long em-dash run (M01c matches every suffix):
+  // a match wholly inside a quote must not be re-tried one code point later.
+  ["closed quote, 68,000 em dashes", `「${"—".repeat(68000)}」`],
   // Many short lines: per-line work must stay line-bounded (review 09-27).
   // 600 KB, because quadratic per-line work still fits the budget at 200 KB
   // (unbounded backtick search: 200 KB ~160 ms, 600 KB ~1.2 s).
