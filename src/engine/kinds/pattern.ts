@@ -54,7 +54,7 @@ export function runPatternRule(
     : context.proseParagraphs().slice(0, rule.detector.within.paragraphs);
 
   for (const unit of context.units(rule.detector.unit)) {
-    const matches = runRegexDetector(unit.text, patterns, context.protectedSpans, excludes, unit.start);
+    const matches = runRegexDetector(unit.text, patterns, context.patternSpans, excludes, unit.start);
     for (const match of matches) {
       if (within !== undefined && !within.some((block) => block.start <= match.start && match.end <= block.end)) {
         continue;

@@ -104,6 +104,12 @@ export interface Profile {
   enable?: string[];
   /** House severity per rule id: replaces the evidence-based severity; findings carry `housePolicy: true`. */
   severity?: Record<string, Severity>;
+  /**
+   * Frontmatter keys whose single-line scalar values pattern rules lint as
+   * prose (matched at any nesting depth, e.g. `summary` under `tldr`). The
+   * rest of the frontmatter stays protected. Not inherited by child profiles.
+   */
+  frontmatter_prose?: string[];
 }
 
 export interface ProtectedSpan {

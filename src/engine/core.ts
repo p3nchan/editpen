@@ -5,7 +5,7 @@ import type { EngineRule, Finding, Profile, ProtectedSpan, Report, SourceSpan } 
 import { ruleDefault } from "./defaults.js";
 import { profileVariant, type ProfileVariant } from "./evidence.js";
 import { normalizeText } from "./normalize.js";
-import { maskProtectedText, protectSpans } from "./protect.js";
+import { frontmatterLength, frontmatterProse, maskProtectedText, protectSpans } from "./protect.js";
 import { runDensityRule } from "./kinds/density.js";
 import { runMetricRule } from "./kinds/metric.js";
 import { runPatternRule } from "./kinds/pattern.js";
@@ -76,6 +76,13 @@ export interface LintContext {
   /** The normalised text (LF, NFC) that rules match against. */
   text: string;
   protectedSpans: readonly ProtectedSpan[];
+  /**
+   * Spans that drop pattern-rule matches: `protectedSpans`, except that the
+   * profile's `frontmatter_prose` values are open (quotes in them stay
+   * protected). Metric and density rules and `proseParagraphs` keep the
+   * whole frontmatter protected.
+   */
+  patternSpans: readonly ProtectedSpan[];
   /** The profile's language variant, for evidence grades. */
   variant: ProfileVariant;
   /** Normalised [start, end) -> located span in the caller's original text. */
@@ -84,6 +91,7 @@ export interface LintContext {
    * Units a pattern is matched in: "document" = the whole text; "paragraph" =
    * structural blocks (blank-line paragraphs; headings, list items and each
    * table cell on their own); "sentence" = those blocks split at 。！？.
+   * Frontmatter yields one block per `frontmatter_prose` value, nothing else.
    */
   units(unit: "sentence" | "paragraph" | "document" | undefined): readonly TextUnit[];
   /** The normalised text with protected spans blanked (same length). */
@@ -118,15 +126,31 @@ function createContext(original: string, profile: Profile): LintContext {
   const normalized = normalizeText(original);
   const { text } = normalized;
   const protectedSpans = protectSpans(text);
+  const prose = frontmatterProse(text, profile.frontmatter_prose ?? []);
+  const patternSpans = prose.length > 0 ? protectSpans(text, prose) : protectedSpans;
+  // Blocks never join a frontmatter value with the next key: the frontmatter
+  // contributes only its prose values as blocks.
+  const frontmatterEnd = prose.length > 0 ? frontmatterLength(text) : 0;
+  const allBlocks = (): TextUnit[] => {
+    const parsed = splitBlocks(text);
+    if (prose.length === 0) {
+      return parsed;
+    }
+    return [
+      ...prose.map((range) => ({ text: text.slice(range.start, range.end), start: range.start, end: range.end })),
+      ...parsed.filter((block) => block.start >= frontmatterEnd),
+    ];
+  };
   let locate: ReturnType<typeof createLocator> | undefined;
   let blocks: TextUnit[] | undefined;
   let sentences: TextUnit[] | undefined;
   let masked: string | undefined;
-  let prose: TextUnit[] | undefined;
+  let paragraphs: TextUnit[] | undefined;
   return {
     original,
     text,
     protectedSpans,
+    patternSpans,
     variant: profileVariant(profile),
     span(start, end) {
       locate ??= createLocator(original);
@@ -137,7 +161,7 @@ function createContext(original: string, profile: Profile): LintContext {
       if (unit === undefined || unit === "document") {
         return [{ text, start: 0, end: text.length }];
       }
-      blocks ??= splitBlocks(text);
+      blocks ??= allBlocks();
       if (unit === "paragraph") {
         return blocks;
       }
@@ -149,10 +173,10 @@ function createContext(original: string, profile: Profile): LintContext {
       return masked;
     },
     proseParagraphs() {
-      blocks ??= splitBlocks(text);
-      prose ??= blocks.filter((block) =>
+      blocks ??= allBlocks();
+      paragraphs ??= blocks.filter((block) =>
         !isMarkupBlock(text, block.start) && !isEmbedBlock(block.text) && !insideNonProse(block, protectedSpans));
-      return prose;
+      return paragraphs;
     },
   };
 }

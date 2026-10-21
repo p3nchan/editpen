@@ -14,6 +14,8 @@ import type { ProtectedSpan } from "./types.js";
 //   line. An opener without its closer protects nothing. Delimiters inside
 //   the spans above (code, frontmatter, blockquote, URL) are ignored.
 // Headings are not protected.
+// A profile can open the values of named frontmatter keys to pattern rules
+// (`frontmatter_prose`); see frontmatterProse.
 
 type SpanKind = Exclude<ProtectedSpan["kind"], "mixed">;
 
@@ -155,12 +157,78 @@ function add(spans: ProtectedSpan[], text: string, regex: RegExp, kind: SpanKind
   }
 }
 
-/** Expects LF text (the engine normalises line endings first). Sorted, merged. */
-export function protectSpans(text: string): ProtectedSpan[] {
+/** Length of the leading frontmatter block, 0 when there is none. */
+export function frontmatterLength(text: string): number {
+  return frontmatter.exec(text)?.[0].length ?? 0;
+}
+
+export interface Range {
+  start: number;
+  end: number;
+}
+
+// One frontmatter line `key: value` (optionally a `- ` list item). Group 1 =
+// key; the value is what follows `: ` up to the end of the line.
+const frontmatterLine = /^[ \t]*(?:-[ \t]+)*([A-Za-z_][\w-]*)[ \t]*:[ \t]+(\S.*?)[ \t]*$/u;
+
+/**
+ * Value ranges of the frontmatter keys in `keys`, at any nesting depth, inside
+ * the surrounding "" or '' when quoted. Single-line scalars only: a block
+ * scalar (| or >), flow collection ([ or {), alias, tag or comment value stays
+ * protected. Expects LF text.
+ */
+export function frontmatterProse(text: string, keys: readonly string[]): Range[] {
+  const front = frontmatter.exec(text);
+  if (front === null || keys.length === 0) {
+    return [];
+  }
+  const wanted = new Set(keys);
+  const ranges: Range[] = [];
+  const end = front[0].length;
+  let lineStart = text.indexOf("---") + 3;
+  while (lineStart < end) {
+    let lineEnd = text.indexOf("\n", lineStart);
+    if (lineEnd < 0 || lineEnd > end) {
+      lineEnd = end;
+    }
+    const line = text.slice(lineStart, lineEnd);
+    const match = frontmatterLine.exec(line);
+    const key = match?.[1];
+    const value = match?.[2];
+    if (key !== undefined && value !== undefined && wanted.has(key) && !/^[|>[{&*!#]/u.test(value)) {
+      let start = lineStart + line.lastIndexOf(value);
+      let stop = start + value.length;
+      const quote = value[0];
+      if ((quote === '"' || quote === "'") && value.length >= 2 && value.endsWith(quote)) {
+        start += 1;
+        stop -= 1;
+      }
+      if (stop > start) {
+        ranges.push({ start, end: stop });
+      }
+    }
+    lineStart = lineEnd + 1;
+  }
+  return ranges;
+}
+
+/**
+ * Expects LF text (the engine normalises line endings first). Sorted, merged.
+ * `open` = frontmatter ranges left unprotected (from frontmatterProse); quote
+ * pairs inside them are protected as in prose.
+ */
+export function protectSpans(text: string, open: readonly Range[] = []): ProtectedSpan[] {
   const spans: ProtectedSpan[] = [];
   const front = frontmatter.exec(text);
   if (front !== null) {
-    spans.push({ start: 0, end: front[0].length, kind: "frontmatter" });
+    let cursor = 0;
+    for (const range of open) {
+      if (range.start > cursor) {
+        spans.push({ start: cursor, end: range.start, kind: "frontmatter" });
+      }
+      cursor = range.end;
+    }
+    spans.push({ start: cursor, end: front[0].length, kind: "frontmatter" });
   }
   lineSpans(text, spans);
   add(spans, text, url, "url");

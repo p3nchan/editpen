@@ -225,6 +225,33 @@ check("penchan: F26b fires on short uniform paragraphs, F26a stays off even with
 check("zh-tw F26a unchanged: paragraphs under 20 chars do not count",
   (await hits(shortUniform, "F26a")).length === 0);
 
+// penchan lints the prose values of frontmatter keys title, description,
+// summary, question and answer (any depth); every other key stays protected.
+const fm = [
+  "---",
+  `title: "${d01a}"`,
+  `imageAlt: "${d01a}"`,
+  "tldr:",
+  `  summary: ${d01a}`,
+  `  audience: "${d01a}"`,
+  "faq:",
+  "  - question: 「不是工具，而是方法」是什麼意思？",
+  "    answer: \"這不是工具，而是方法，要靠設計\"",
+  "  - question: 下一題",
+  "---",
+  "正文。",
+].join("\n");
+const fmHits = (await node.lint(fm, { profile: "penchan" })).findings
+  .filter((f) => f.ruleId === "D01a")
+  .map((f) => `${f.span.line}:${f.span.column}:${fm.slice(f.span.start, f.span.end)}`);
+check("penchan frontmatter prose: title, tldr.summary, faq answer; not imageAlt/audience or a quoted question",
+  fmHits.join("|") === "2:10:不是工具，而是方法|5:13:不是工具，而是方法|9:15:不是工具，而是方法，要靠設計", fmHits.join("|"));
+check("zh-tw keeps the whole frontmatter protected", (await hits(fm, "D01a")).length === 0);
+const fmCrlf = fm.replaceAll("\n", "\r\n");
+const crlfLines = (await node.lint(fmCrlf, { profile: "penchan" })).findings
+  .filter((f) => f.ruleId === "D01a").map((f) => f.span.line).join();
+check("frontmatter prose lines map back with CRLF", crlfLines === "2,5,9", crlfLines);
+
 // Evidence grade follows the profile's variant: F09a's A source is zh-CN only.
 const f09 = async (profile: string): Promise<string | undefined> =>
   (await node.lint("我們需要進行評估。", { profile, ruleIds: ["F09a"] })).findings[0]?.evidenceGrade;
