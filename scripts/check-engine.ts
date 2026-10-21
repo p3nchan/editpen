@@ -269,6 +269,31 @@ const crlfLines = (await node.lint(fmCrlf, { profile: "penchan" })).findings
   .filter((f) => f.ruleId === "D01a").map((f) => f.span.line).join();
 check("frontmatter prose lines map back with CRLF", crlfLines === "2,5,9", crlfLines);
 
+// Frontmatter prose = the scalar only: no comment after it, nothing inside a
+// block scalar or a multi-line value, even when a line there looks like a key.
+const fmCases: [string, string, string][] = [
+  ["comment after a plain scalar", "title: 今天出門散步 # yyds", ""],
+  ["comment after a quoted scalar", "title: \"今天出門散步\" # yyds", ""],
+  ["quoted scalar before a comment", "title: \"yyds\" # 今天出門散步", "2:9:yyds"],
+  ["plain scalar before a comment", "title: yyds # 註解", "2:8:yyds"],
+  ["single-quoted with an escaped quote", "title: 'it''s yyds' # x", "2:15:yyds"],
+  ["key-looking line in an unselected block scalar", "example: |\n  title: yyds", ""],
+  ["key-looking line in a selected folded scalar", "description: >-\n  title: yyds", ""],
+  ["key-looking line in a list block scalar", "items:\n  - |\n    title: yyds", ""],
+  ["unclosed quote continues", "title: \"第一行\n  yyds\"", ""],
+  ["plain scalar continues", "title: 第一行\n  yyds 續行", ""],
+  ["sibling after a block scalar", "example: |\n  title: 不算\ntitle: yyds", "4:8:yyds"],
+];
+for (const [label, yaml, expected] of fmCases) {
+  const doc = `---\n${yaml}\n---\n正文。`;
+  const found = (await node.lint(doc, { profile: "penchan", ruleIds: ["D04c"] })).findings
+    .map((f) => `${f.span.line}:${f.span.column}:${f.match}`).join("|");
+  check(`frontmatter prose: ${label}`, found === expected, found);
+}
+const fmComment = (await node.lint("---\ntitle: 不是工具，而是方法 # 」\n---\n正文。", { profile: "penchan", ruleIds: ["D01a"] }))
+  .findings.map((f) => f.match).join("|");
+check("frontmatter prose: a quote mark in the comment changes nothing", fmComment === "不是工具，而是方法", fmComment);
+
 // Evidence grade follows the profile's variant: F09a's A source is zh-CN only.
 const f09 = async (profile: string): Promise<string | undefined> =>
   (await node.lint("我們需要進行評估。", { profile, ruleIds: ["F09a"] })).findings[0]?.evidenceGrade;

@@ -36,7 +36,8 @@ enable:
 # the internal pilot checklist (ERROR -> error, WARN -> warn, INFO -> info).
 # D04a and M01b have no counterpart of their own and keep their evidence level.
 # Frontmatter values linted as prose by pattern rules (one-line scalars, any
-# depth: tldr.summary, faq[].question / answer); the rest stays protected.
+# depth: tldr.summary, faq[].question / answer; comments excluded); the rest
+# stays protected.
 frontmatter_prose: [title, description, summary, question, answer]
 severity:
   D01a: error

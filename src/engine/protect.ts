@@ -167,15 +167,49 @@ export interface Range {
   end: number;
 }
 
-// One frontmatter line `key: value` (optionally a `- ` list item). Group 1 =
-// key; the value is what follows `: ` up to the end of the line.
-const frontmatterLine = /^[ \t]*(?:-[ \t]+)*([A-Za-z_][\w-]*)[ \t]*:[ \t]+(\S.*?)[ \t]*$/u;
+// One frontmatter line `key: value` (optionally after `- ` list markers).
+// Group 1 = everything before the key (its column), 2 = key, 3 = the rest.
+const frontmatterKey = /^([ \t]*(?:-[ \t]+)*)([A-Za-z_][\w-]*)[ \t]*:(?:[ \t]+(.*))?$/u;
+
+/**
+ * [start, end) of the scalar that opens `value` (offsets in `value`), inside
+ * the surrounding "" or '' when quoted; undefined when it is not a
+ * single-line scalar: a block scalar (| or >), flow collection ([ or {),
+ * alias, tag, directive or comment, or a quote not closed on this line.
+ * A plain scalar ends before ` #` (a comment); text after a closing quote is
+ * ignored.
+ */
+function scalarValue(value: string): Range | undefined {
+  const quote = value[0];
+  if (quote === '"' || quote === "'") {
+    for (let index = 1; index < value.length; index += 1) {
+      const char = value[index];
+      if (quote === '"' && char === "\\") {
+        index += 1;
+      } else if (char === quote) {
+        if (quote === "'" && value[index + 1] === "'") {
+          index += 1;
+          continue;
+        }
+        return { start: 1, end: index };
+      }
+    }
+    return undefined;
+  }
+  if (/^[|>[{&*!#%@`]/u.test(value)) {
+    return undefined;
+  }
+  const comment = /[ \t]#/u.exec(value);
+  const end = (comment === null ? value : value.slice(0, comment.index)).trimEnd().length;
+  return { start: 0, end };
+}
 
 /**
  * Value ranges of the frontmatter keys in `keys`, at any nesting depth, inside
- * the surrounding "" or '' when quoted. Single-line scalars only: a block
- * scalar (| or >), flow collection ([ or {), alias, tag or comment value stays
- * protected. Expects LF text.
+ * the surrounding "" or '' when quoted, without a trailing comment. A key's
+ * value owns every following line indented past the key (a block scalar, a
+ * multi-line scalar or flow collection): those lines are never read as keys,
+ * and a value that continues there is not opened. Expects LF text.
  */
 export function frontmatterProse(text: string, keys: readonly string[]): Range[] {
   const front = frontmatter.exec(text);
@@ -185,6 +219,9 @@ export function frontmatterProse(text: string, keys: readonly string[]): Range[]
   const wanted = new Set(keys);
   const ranges: Range[] = [];
   const end = front[0].length;
+  // Lines indented more than `owner` belong to the value on an earlier line.
+  let owner = -1;
+  let pending: Range | undefined;
   let lineStart = text.indexOf("---") + 3;
   while (lineStart < end) {
     let lineEnd = text.indexOf("\n", lineStart);
@@ -192,22 +229,46 @@ export function frontmatterProse(text: string, keys: readonly string[]): Range[]
       lineEnd = end;
     }
     const line = text.slice(lineStart, lineEnd);
-    const match = frontmatterLine.exec(line);
-    const key = match?.[1];
-    const value = match?.[2];
-    if (key !== undefined && value !== undefined && wanted.has(key) && !/^[|>[{&*!#]/u.test(value)) {
-      let start = lineStart + line.lastIndexOf(value);
-      let stop = start + value.length;
-      const quote = value[0];
-      if ((quote === '"' || quote === "'") && value.length >= 2 && value.endsWith(quote)) {
-        start += 1;
-        stop -= 1;
-      }
-      if (stop > start) {
-        ranges.push({ start, end: stop });
-      }
-    }
     lineStart = lineEnd + 1;
+    const content = line.trimStart();
+    if (content === "") {
+      continue;
+    }
+    const indent = line.length - content.length;
+    if (owner >= 0 && indent > owner) {
+      // The pending value continues on this line: leave it protected.
+      pending = undefined;
+      continue;
+    }
+    if (pending !== undefined) {
+      ranges.push(pending);
+      pending = undefined;
+    }
+    owner = -1;
+    if (content.startsWith("#")) {
+      continue;
+    }
+    const match = frontmatterKey.exec(line);
+    if (match === null) {
+      // A sequence item or other scalar owns the lines indented past it; a
+      // bare "-" item holds a nested node instead.
+      owner = content === "-" ? -1 : indent;
+      continue;
+    }
+    const column = match[1]?.length ?? 0;
+    const value = match[3]?.trimEnd() ?? "";
+    if (value === "" || value.startsWith("#")) {
+      continue;
+    }
+    owner = column;
+    const valueStart = lineEnd - (match[3]?.length ?? 0);
+    const scalar = wanted.has(match[2] ?? "") ? scalarValue(value) : undefined;
+    if (scalar !== undefined && scalar.end > scalar.start) {
+      pending = { start: valueStart + scalar.start, end: valueStart + scalar.end };
+    }
+  }
+  if (pending !== undefined) {
+    ranges.push(pending);
   }
   return ranges;
 }
