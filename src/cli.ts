@@ -289,6 +289,14 @@ interface LintCommandOptions {
   enable: string[];
   disable: string[];
   experimental: boolean;
+  maxWarnings?: number;
+}
+
+function parseMaxWarnings(value: string): number {
+  if (!/^\d+$/u.test(value)) {
+    throw new Error(`--max-warnings expects a non-negative integer, got ${value}`);
+  }
+  return Number(value);
 }
 
 function collectIds(value: string, previous: string[]): string[] {
@@ -308,6 +316,7 @@ program
   .option("--enable <ids>", "also run these rules (comma-separated; repeatable)", collectIds, [])
   .option("--disable <ids>", "do not run these rules (comma-separated; repeatable)", collectIds, [])
   .option("--experimental", "also run rules whose default is experimental", false)
+  .option("--max-warnings <n>", "also exit 1 when there are more than n warnings", parseMaxWarnings)
   .action(async (file: string, options: LintCommandOptions) => {
     if (options.format !== "human" && options.format !== "json") {
       throw new Error(`Unknown format: ${options.format}`);
@@ -321,7 +330,10 @@ program
       experimental: options.experimental,
     });
     process.stdout.write(`${options.format === "json" ? formatJson(report) : formatHuman(report, file)}\n`);
-    if (report.summary.error > 0) {
+    if (
+      report.summary.error > 0 ||
+      (options.maxWarnings !== undefined && report.summary.warn > options.maxWarnings)
+    ) {
       process.exitCode = 1;
     }
   });

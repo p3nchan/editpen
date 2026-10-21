@@ -38,6 +38,7 @@ editpen 的靈感來自小企鵝在研究所修的一門論文寫作課：把論
 ```bash
 npx editpen lint 你的文章.md
 npx editpen lint 你的文章.md --experimental   # 連實驗規則一起跑
+npx editpen lint 你的文章.md --max-warnings 0 # 有 error 時結束碼是 1；加這個參數，warn 超過 0 個也是 1
 npx editpen explain D01a                      # 看某條規則的說明、例外和出處
 ```
 
@@ -171,7 +172,7 @@ editpen 不做的事：
 
 The name comes from Stephen Chow's *Kung Fu Hustle* (2004): a dying character tries to speak English, nobody understands him, and the landlord says, "Ah Gui, just speak Chinese." AI-written Chinese often wears an English skeleton; editpen says the same thing.
 
-**Try it** at [penchan.co/editpen](https://penchan.co/editpen/) (the check runs in your browser; nothing is uploaded), or run `npx editpen lint your-file.md` (add `--experimental` for all rules).
+**Try it** at [penchan.co/editpen](https://penchan.co/editpen/) (the check runs in your browser; nothing is uploaded), or run `npx editpen lint your-file.md` (add `--experimental` for all rules). `lint` exits 1 when there is an error; add `--max-warnings <n>` to also exit 1 when there are more than n warnings (`--max-warnings 0` fails on any warning).
 
 **Defaults.** Three rules are on by default: two because our data supports them, one because Taiwan's Ministry of Education lists the terms: "not X but Y" frames (D01a), mainland-only terms per Taiwan's Ministry of Education list (D04a), and dense dashes (M01b, as a hint). The other thirteen are experimental: some are classic template patterns our AI drafts rarely produced, others also flag human writing too often or are not yet validated.
 
