@@ -164,15 +164,23 @@ export function isMarkupBlock(text: string, start: number): boolean {
   return blockStart.test(line) || tableRow.test(line);
 }
 
-// A block made only of images (`![alt](src)`) or only of HTML lines is not
-// prose either (an embed or a figure).
-const imageOnlyLine = /^[ \t]*(?:!\[[^\]\n]*\]\([^)\n]*\)[ \t]*)+$/u;
+// A block made only of images (`![alt](src)` or `![alt][ref]`), only of HTML
+// lines, only of thematic breaks (`***`, `___`, `---`), or only of link /
+// footnote reference definitions (`[x]: url`, `[^1]: note`, with indented
+// continuation lines) is not prose either.
+const imageOnlyLine = /^[ \t]*(?:!\[[^\]\n]*\](?:\([^)\n]*\)|\[[^\]\n]*\])[ \t]*)+$/u;
 const htmlOnlyLine = /^[ \t]*<[^\n]*>[ \t]*$/u;
+const thematicBreak = /^ {0,3}([-*_])(?:[ \t]*\1){2,}[ \t]*$/u;
+const definitionLine = /^ {0,3}\[[^\]\n]+\]:/u;
+const continuationLine = /^(?: {2,}|\t)/u;
 
-/** True when every line of `block` is image markup, or every line is an HTML line. */
+/** True when `block` is only images, only HTML lines, only thematic breaks, or only reference definitions. */
 export function isEmbedBlock(block: string): boolean {
   const lines = block.split("\n");
-  return lines.every((line) => imageOnlyLine.test(line)) || lines.every((line) => htmlOnlyLine.test(line));
+  return lines.every((line) => imageOnlyLine.test(line)) ||
+    lines.every((line) => htmlOnlyLine.test(line)) ||
+    lines.every((line) => thematicBreak.test(line)) ||
+    (definitionLine.test(lines[0] ?? "") && lines.every((line) => definitionLine.test(line) || continuationLine.test(line)));
 }
 
 /** Code points that are not whitespace. */

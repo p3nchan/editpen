@@ -100,7 +100,8 @@ export interface LintContext {
   masked(): string;
   /**
    * Prose paragraphs in order: paragraph blocks minus headings, list items,
-   * table cells, markers, blockquotes, image-only or HTML-only blocks, and
+   * table cells, markers, blockquotes, image-only, HTML-only, thematic-break
+   * or reference-definition blocks, and
    * blocks inside code or frontmatter.
    */
   proseParagraphs(): readonly TextUnit[];

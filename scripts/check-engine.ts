@@ -234,6 +234,17 @@ for (const [label, text] of [
   check(`M01c ${label}`, dashes.join("|") === "——", dashes.join("|"));
 }
 
+// Non-prose blocks before the opening paragraph do not use up F12b's
+// one-paragraph budget.
+for (const prefix of ["***", "___", "---", "* * *", "[source]: https://example.com", "[^1]: 註腳說明",
+  "[a]: https://a.example\n[b]: https://b.example", "![圖][pic]", "![圖][]", "# 小標題"]) {
+  const opening = (await node.lint(`${prefix}\n\n寫程式就像煮菜。`, { profile: "penchan", ruleIds: ["F12b"] })).findings;
+  check(`F12b after ${JSON.stringify(prefix)}`, opening.length === 1, String(opening.length));
+}
+const definitionThenProse = (await node.lint("[x]: 說明\n就像煮菜。\n\n寫程式就像煮菜。",
+  { profile: "penchan", ruleIds: ["F12b"] })).findings.map((f) => f.span.line).join();
+check("F12b: a definition line followed by prose is still a paragraph", definitionThenProse === "2", definitionThenProse);
+
 // penchan swaps F26a for F26b: short paragraphs (7+ chars) count there.
 const shortUniform = "今天去海邊看企鵝了。\n\n牠們排成一列走路。\n\n回家時天已經黑了。";
 const shortRun = (await node.lint(shortUniform, { profile: "penchan", experimental: true })).findings.map((f) => f.ruleId);
