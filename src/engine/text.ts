@@ -164,6 +164,17 @@ export function isMarkupBlock(text: string, start: number): boolean {
   return blockStart.test(line) || tableRow.test(line);
 }
 
+// A block made only of images (`![alt](src)`) or only of HTML lines is not
+// prose either (an embed or a figure).
+const imageOnlyLine = /^[ \t]*(?:!\[[^\]\n]*\]\([^)\n]*\)[ \t]*)+$/u;
+const htmlOnlyLine = /^[ \t]*<[^\n]*>[ \t]*$/u;
+
+/** True when every line of `block` is image markup, or every line is an HTML line. */
+export function isEmbedBlock(block: string): boolean {
+  const lines = block.split("\n");
+  return lines.every((line) => imageOnlyLine.test(line)) || lines.every((line) => htmlOnlyLine.test(line));
+}
+
 /** Code points that are not whitespace. */
 export function charCount(text: string): number {
   let count = 0;

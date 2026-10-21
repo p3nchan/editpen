@@ -312,6 +312,25 @@ try {
   check("within: first 2 prose paragraphs only", within.findings.length === 3 &&
     within.findings.every((f) => f.match === "測試詞") && lines === "20,24,24", lines);
 
+  // A block that is only images or only HTML lines is not a prose paragraph
+  // either; an image followed by text still is.
+  const embeds = [
+    "![測試詞](a.png)",
+    "<div>測試詞</div>",
+    "<p>\n<img src=\"b.png\" alt=\"測試詞\">\n</p>",
+    "第一段。",
+    "第二段有測試詞。",
+    "第三段的測試詞不算。",
+  ].join("\n\n");
+  const embedRun = await node.lint(embeds, { profile: "house-test", rulesDir: houseDir, ruleIds: ["Z01a"] });
+  const embedLines = embedRun.findings.map((finding) => finding.span.line).join();
+  check("within: image-only and HTML-only blocks are not prose", embedLines === "11", embedLines);
+  const captioned = await node.lint("![圖](a.png) 圖說有測試詞。\n\n第二段。\n\n第三段有測試詞。", {
+    profile: "house-test", rulesDir: houseDir, ruleIds: ["Z01a"],
+  });
+  check("within: image plus text is still prose", captioned.findings.map((f) => f.span.line).join() === "1",
+    captioned.findings.map((f) => f.span.line).join());
+
   // check-rules: accepts the house rule and profile; rejects a rule default
   // above its evidence ceiling and a profile entry naming an unknown rule.
   const passing = cli("check-rules", "--rules-dir", houseDir);

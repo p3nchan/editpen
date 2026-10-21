@@ -10,7 +10,7 @@ import { runDensityRule } from "./kinds/density.js";
 import { runMetricRule } from "./kinds/metric.js";
 import { runPatternRule } from "./kinds/pattern.js";
 import { effectiveSeverity, isHouseSeverity } from "./severity.js";
-import { createLocator, isMarkupBlock, splitBlocks, splitSentences, type TextUnit } from "./text.js";
+import { createLocator, isEmbedBlock, isMarkupBlock, splitBlocks, splitSentences, type TextUnit } from "./text.js";
 
 export interface CoreInput {
   profile: Profile;
@@ -90,7 +90,8 @@ export interface LintContext {
   masked(): string;
   /**
    * Prose paragraphs in order: paragraph blocks minus headings, list items,
-   * table cells, markers, blockquotes, and blocks inside code or frontmatter.
+   * table cells, markers, blockquotes, image-only or HTML-only blocks, and
+   * blocks inside code or frontmatter.
    */
   proseParagraphs(): readonly TextUnit[];
 }
@@ -150,7 +151,7 @@ function createContext(original: string, profile: Profile): LintContext {
     proseParagraphs() {
       blocks ??= splitBlocks(text);
       prose ??= blocks.filter((block) =>
-        !isMarkupBlock(text, block.start) && !insideNonProse(block, protectedSpans));
+        !isMarkupBlock(text, block.start) && !isEmbedBlock(block.text) && !insideNonProse(block, protectedSpans));
       return prose;
     },
   };
