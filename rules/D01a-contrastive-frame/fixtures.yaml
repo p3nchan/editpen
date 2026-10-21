@@ -78,3 +78,17 @@ fixtures:
     text: 他說那叫「不是髒東西，而是卵齒」。
     expect: pass
     note: 整個句型都在引號裡，是引述
+  - id: D01a-pass-009
+    text: 「這不是工具，而是方法。」
+    expect: pass
+    note: 整句是一組引號，是引述
+  - id: D01a-fail-011
+    text: 「卵齒」不是髒東西，而是孵化用的「工具」。
+    expect: fail
+    spans: [[4, 20]]
+    note: 句首、句尾各是一個加了引號的詞，句型本身不在引號裡，照樣提出
+  - id: D01a-fail-012
+    text: 「卵齒」不是髒東西，而是孵化用的「工具」，需要保護。
+    expect: fail
+    spans: [[4, 25]]
+    note: 兩個加了引號的詞加上句尾補述，照樣提出

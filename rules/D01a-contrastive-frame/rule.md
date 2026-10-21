@@ -27,7 +27,7 @@ detector:
       regex: '(與其說|與其)[^，。！？]{2,20}[，,]?\s*不如(說)?[^。！？]{2,24}'
   exclude:
     - name: quoted-sentence
-      regex: '^「.*」[。！？]?$'
+      regex: '^「[^「」]*」[。！？]?$'
 provenance:
   derived_from: internal pilot checklist v2 F1 high-precision bucket (2026-04-24)
   author: penchan
@@ -49,7 +49,7 @@ variants:
   zh-cn: { evidence: practitioner, measured: false }
 false_positives:
   - context: 引述中的原話
-    fixtures: [D01a-pass-001, D01a-pass-008]
+    fixtures: [D01a-pass-001, D01a-pass-008, D01a-pass-009]
   - context: 「不是 X」放句尾做必要釐清
     fixtures: [D01a-pass-002]
   - context: 編輯性的實質比較
