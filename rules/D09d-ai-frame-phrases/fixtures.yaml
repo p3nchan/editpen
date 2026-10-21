@@ -1,0 +1,54 @@
+schema: 1
+rule: D09d
+fixtures:
+  - id: D09d-fail-001
+    text: 這次的漲價，我們把它拆開來看。
+    expect: fail
+    spans: [[10, 14]]
+  - id: D09d-fail-002
+    text: 我來拆解這份財報的三個數字。
+    expect: fail
+    spans: [[0, 4]]
+  - id: D09d-fail-003
+    text: 把兩家的方案放一起看，差別就很明顯。
+    expect: fail
+    spans: [[6, 10]]
+  - id: D09d-fail-004
+    text: 這部紀錄片拍得不華麗，但很真。
+    expect: fail
+    spans: [[12, 14]]
+  - id: D09d-fail-005
+    text: 新工具我還在摸索，之後再分享心得。
+    expect: fail
+    spans: [[4, 8]]
+  - id: D09d-fail-006
+    text: 我們先把成本這個問題放回桌上。
+    expect: fail
+    spans: [[10, 14]]
+  - id: D09d-pass-001
+    text: 這部紀錄片拍得很真實。
+    expect: pass
+  - id: D09d-pass-002
+    text: 他道歉的語氣很真誠。
+    expect: pass
+  - id: D09d-pass-003
+    text: 這份祝福很真心。
+    expect: pass
+  - id: D09d-pass-004
+    text: 那封信寫得很真情流露。
+    expect: pass
+  - id: D09d-pass-005
+    text: 他對市場的觀察很真切。
+    expect: pass
+  - id: D09d-pass-006
+    text: 收到包裹後先拆開檢查有沒有破損。
+    expect: pass
+    note: 字面上的拆開
+  - id: D09d-pass-007
+    text: 技師把引擎拆解成三十幾個零件。
+    expect: pass
+    note: 字面上的拆解
+  - id: D09d-pass-008
+    text: 小編最常刪的一句是「我們拆開來看」。
+    expect: pass
+    note: 引文受保護

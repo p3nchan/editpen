@@ -1,0 +1,32 @@
+schema: 1
+rule: M01c
+fixtures:
+  - id: M01c-fail-001
+    text: 會議延到下週——講者臨時出國了。
+    expect: fail
+    spans: [[6, 8]]
+  - id: M01c-fail-002
+    text: 這台筆電很輕——但電池只撐兩小時——所以我還是帶了行動電源。
+    expect: fail
+    spans: [[6, 8], [16, 18]]
+  - id: M01c-fail-003
+    text: 結果呢———他根本沒來。
+    expect: fail
+    spans: [[3, 6]]
+    note: 三個以上連在一起也只回報一次
+  - id: M01c-pass-001
+    text: 會議延到下週──講者臨時出國了。
+    expect: pass
+    note: 手冊的破折號「──」
+  - id: M01c-pass-002
+    text: 搭高鐵從台北—左營只要兩小時。
+    expect: pass
+    note: 單一的「—」不在這條範圍
+  - id: M01c-pass-003
+    text: 他在信裡寫：「我走了——別找我。」
+    expect: pass
+    note: 引文受保護
+  - id: M01c-pass-004
+    text: 把 `a——b` 這行貼進終端機就好。
+    expect: pass
+    note: 行內程式碼受保護

@@ -1,0 +1,40 @@
+schema: 1
+rule: D04c
+fixtures:
+  - id: D04c-fail-001
+    text: 這套排程工具真的是 YYDS，我每天都在用。
+    expect: fail
+    spans: [[10, 14]]
+    note: yyds 大小寫都算
+  - id: D04c-fail-002
+    text: 今天分享一篇保姆級教學，照著做就會。
+    expect: fail
+    spans: [[6, 9]]
+  - id: D04c-fail-003
+    text: 公司今年的目標是降本增效，先砍掉兩個專案。
+    expect: fail
+    spans: [[8, 12]]
+  - id: D04c-fail-004
+    text: 這款收納盒根本是強迫症福音，每一格都剛好。
+    expect: fail
+    spans: [[8, 13]]
+  - id: D04c-fail-005
+    text: 他辭職後當起數字游民，帶著筆電到處跑。
+    expect: fail
+    spans: [[6, 10]]
+  - id: D04c-pass-001
+    text: 這份工作的薪水只有保姆級別的水準。
+    expect: pass
+    note: 「保姆級別」是正常的複合詞
+  - id: D04c-pass-002
+    text: 對岸網友會說「絕絕子」，台灣比較常說「超讚」。
+    expect: pass
+    note: 引文受保護
+  - id: D04c-pass-003
+    text: 他辭職後成了數位遊牧，帶著筆電到處跑。
+    expect: pass
+    note: 台灣的說法
+  - id: D04c-pass-004
+    text: 我們請了一位保姆，每天下午來幫忙。
+    expect: pass
+    note: 「保姆」本身不在名單

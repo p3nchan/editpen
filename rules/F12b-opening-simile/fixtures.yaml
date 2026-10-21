@@ -1,0 +1,24 @@
+schema: 1
+rule: F12b
+fixtures:
+  - id: F12b-fail-001
+    text: 管理預算就像開車，油門和煞車都要會用。
+    expect: fail
+    spans: [[4, 6]]
+  - id: F12b-fail-002
+    text: "---\ntitle: 學寫作\n---\n\n# 學寫作\n\n![封面](cover.png)\n\n<div class=\"note\"></div>\n\n學寫作好比練琴，\n每天都得練一點。\n\n第二段。"
+    expect: fail
+    spans: [[74, 76]]
+    note: frontmatter、標題、只有圖片或 HTML 的段落都跳過；第一句跨行也算
+  - id: F12b-pass-001
+    text: 我學寫作三年了。這件事就像練琴，每天都得練一點。
+    expect: pass
+    note: 比喻在第二句
+  - id: F12b-pass-002
+    text: "我學寫作三年了。\n\n寫作就像練琴，每天都得練一點。"
+    expect: pass
+    note: 比喻在第二個正文段落
+  - id: F12b-pass-003
+    text: "# 寫作就像練琴\n\n![就像練琴](piano.png)\n\n我學寫作三年了。"
+    expect: pass
+    note: 標題與圖片不算正文段落，也不提出

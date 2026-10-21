@@ -1,0 +1,83 @@
+schema: 1
+rule: D04d
+fixtures:
+  - id: D04d-fail-001
+    text: 每個專案結束後，我們都會開會復盤。
+    expect: fail
+    spans: [[14, 16]]
+  - id: D04d-fail-002
+    text: 這支新手機的拍照真的太香了。
+    expect: fail
+    spans: [[10, 12]]
+  - id: D04d-fail-003
+    text: 報名時請填寫手機號和電子郵件。
+    expect: fail
+    spans: [[6, 9]]
+  - id: D04d-fail-004
+    text: 這份報告的信息量很大，要慢慢看。
+    expect: fail
+    spans: [[5, 7]]
+  - id: D04d-fail-005
+    text: 新版模型號稱是滿血版，速度快了一倍。
+    expect: fail
+    spans: [[7, 10]]
+  - id: D04d-fail-006
+    text: 老闆希望用 AI 幫客服提效，下個月就上線。
+    expect: fail
+    spans: [[12, 14]]
+  - id: D04d-fail-007
+    text: 這個代理工具可以把同一套流程複用到別的部門。
+    expect: fail
+    spans: [[14, 16]]
+  - id: D04d-pass-001
+    text: 疫情讓整條供應鏈路都卡住了。
+    expect: pass
+    note: 供應鏈＋路
+  - id: D04d-pass-002
+    text: 公車改走這條鏈路線以後快多了。
+    expect: pass
+    note: 「鏈路線」排除
+  - id: D04d-pass-003
+    text: 這個便當盒可以重複用很多次。
+    expect: pass
+    note: 重複＋用
+  - id: D04d-pass-004
+    text: 他反複用同一招，對手早就看穿了。
+    expect: pass
+    note: 反複＋用
+  - id: D04d-pass-005
+    text: 車廠強調新車的智能體驗。
+    expect: pass
+    note: 智能＋體驗
+  - id: D04d-pass-006
+    text: 報名時請填寫手機號碼和電子郵件。
+    expect: pass
+    note: 「手機號碼」是台灣的說法
+  - id: D04d-pass-007
+    text: 螞蟻靠信息素找到回家的路。
+    expect: pass
+    note: 「信息素」是生物學名詞
+  - id: D04d-pass-008
+    text: 這個網站把隱私域名註冊服務放在付費方案裡。
+    expect: pass
+    note: 隱私＋域名
+  - id: D04d-pass-009
+    text: 他剛需要一台新電腦，就碰上週年慶。
+    expect: pass
+    note: 剛＋需要
+  - id: D04d-pass-010
+    text: 每天接觸達上百人的店員要先打疫苗。
+    expect: pass
+    note: 接觸＋達
+  - id: D04d-pass-011
+    text: 一切以安全為前提效率才有意義。
+    expect: pass
+    note: 前提＋效率
+  - id: D04d-pass-012
+    text: 院子裡開了一朵很香的花。
+    expect: pass
+    note: 「香」修飾名詞
+  - id: D04d-pass-013
+    text: 對岸講的「顆粒度」，台灣多半說「細節程度」。
+    expect: pass
+    note: 引文受保護

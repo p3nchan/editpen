@@ -1,0 +1,37 @@
+schema: 1
+rule: D09c
+fixtures:
+  - id: D09c-fail-001
+    text: 週年慶的流量，伺服器撐得住嗎？
+    expect: fail
+    spans: [[10, 13]]
+  - id: D09c-fail-002
+    text: 連續加班一個月，誰都會撐不住。
+    expect: fail
+    spans: [[11, 14]]
+  - id: D09c-fail-003
+    text: 財報出來以後，股價總算撐住了。
+    expect: fail
+    spans: [[11, 13]]
+  - id: D09c-fail-004
+    text: 這樣的預算撐不撐得住到年底？
+    expect: fail
+    spans: [[5, 10]]
+  - id: D09c-fail-005
+    text: 先撑住这一季再说。
+    expect: fail
+    spans: [[1, 3]]
+    note: 簡體字形
+  - id: D09c-pass-001
+    text: 外面下大雨，記得撐傘。
+    expect: pass
+  - id: D09c-pass-002
+    text: 這幾根柱子支撐著整座橋。
+    expect: pass
+  - id: D09c-pass-003
+    text: 有家人幫他撐腰，他才敢辭職。
+    expect: pass
+  - id: D09c-pass-004
+    text: 我們把「撐得住」改成「夠不夠用」。
+    expect: pass
+    note: 引文受保護

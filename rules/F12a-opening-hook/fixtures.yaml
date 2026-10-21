@@ -1,0 +1,27 @@
+schema: 1
+rule: F12a
+fixtures:
+  - id: F12a-fail-001
+    text: 自動交易機器人很方便，但最重要的是你得設好停損。
+    expect: fail
+    spans: [[12, 18]]
+  - id: F12a-fail-002
+    text: "---\ntitle: 理財入門\n---\n\n# 理財入門\n\n存錢不難。\n\n真正的重點就是你能不能煞住車，不亂花。"
+    expect: fail
+    spans: [[39, 44], [47, 50]]
+    note: frontmatter 和標題不算正文段落；第二個正文段落仍在前三段內
+  - id: F12a-fail-003
+    text: "第一段。\n\n第二段。\n\n關鍵是你每天有沒有寫。"
+    expect: fail
+    spans: [[12, 16]]
+  - id: F12a-pass-001
+    text: "第一段。\n\n第二段。\n\n第三段。\n\n最重要的是你得設好停損。"
+    expect: pass
+    note: 第四個正文段落不在範圍內
+  - id: F12a-pass-002
+    text: "# 最重要的是你\n\n- 關鍵是你\n\n> 煞得住車\n\n正文從這裡開始。"
+    expect: pass
+    note: 標題、清單、引文不算正文段落，也不提出
+  - id: F12a-pass-003
+    text: 旅行前最重要的是時間安排。
+    expect: pass

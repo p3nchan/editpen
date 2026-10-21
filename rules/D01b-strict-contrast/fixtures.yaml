@@ -1,0 +1,39 @@
+schema: 1
+rule: D01b
+fixtures:
+  - id: D01b-fail-001
+    text: 她從來不是會遲到的人。
+    expect: fail
+    spans: [[1, 10]]
+  - id: D01b-fail-002
+    text: 這次延期其實不是人手問題，而是規格一直在改。
+    expect: fail
+    spans: [[4, 21]]
+  - id: D01b-fail-003
+    text: 他從來都不是為了錢，是為了證明自己做得到。
+    expect: fail
+    spans: [[1, 20]]
+  - id: D01b-fail-004
+    text: 表面上看是免運，實際上運費早就算進售價。
+    expect: fail
+    spans: [[0, 19]]
+  - id: D01b-fail-005
+    text: 表面上兩家在競爭，骨子裡是同一個集團。
+    expect: fail
+    spans: [[0, 18]]
+  - id: D01b-pass-001
+    text: 他從來不說謊，大家都很信任他。
+    expect: pass
+    note: 沒有「不是」
+  - id: D01b-pass-002
+    text: 下雨其實是好事，水庫終於有水了。
+    expect: pass
+    note: 「其實是」不是否定
+  - id: D01b-pass-003
+    text: 表面上的刮痕用軟布擦一擦就好。
+    expect: pass
+    note: 沒有「實際上」這類翻轉
+  - id: D01b-pass-004
+    text: 店長說：「表面上看是免運，實際上運費早就算進去了。」
+    expect: pass
+    note: 引文受保護
