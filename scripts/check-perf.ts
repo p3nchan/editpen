@@ -45,6 +45,8 @@ const cases: [string, string][] = [
   ["full-width space runs", fill("　")],
   ["triads on one line", fill("是ab、是cd、是ef。整理思路、提升效率、拓展視野。")],
   ["summary openers, no terminator", fill("\n總結來說，")],
+  // Each match starts in a quote and runs past it: re-matched once per quote.
+  ["quoted examples + tail, one line", fill("「不是甲乙，而是丙丁」後面，")],
   // Many short lines: per-line work must stay line-bounded (review 09-27).
   // 600 KB, because quadratic per-line work still fits the budget at 200 KB
   // (unbounded backtick search: 200 KB ~160 ms, 600 KB ~1.2 s).

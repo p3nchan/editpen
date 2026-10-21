@@ -57,6 +57,22 @@ for (const [label, text] of protectedCases) {
   check(`protected ${label}`, found.length === 0, `got ${JSON.stringify(found)}`);
 }
 
+// A quote drops only a match that lies inside it: a pattern that straddles a
+// quote (quoted word in X or in Y) is reported; a quoted example of the
+// pattern stays protected even when text follows the closing 」.
+const straddle: [string, string, string[]][] = [
+  ["quote in X", "小白點不是「卵齒」，而是幫他破殼的工具。", ["不是「卵齒」，而是幫他破殼的工具"]],
+  ["quote in Y", "小白點不是沾到的髒東西，而是幫他破殼的「卵齒」。", ["不是沾到的髒東西，而是幫他破殼的「卵齒」"]],
+  ["quote mid-Y", "小白點不是髒東西，而是幫他「破殼」的工具。", ["不是髒東西，而是幫他「破殼」的工具"]],
+  ["whole match inside a quote", "他說那叫「不是髒東西，而是卵齒」。", []],
+  ["quoted example followed by text", "「不是 X，而是 Y」這種對比句很常見。", []],
+  ["code still drops a straddle", "小白點不是`卵齒`，而是幫他破殼的工具。", []],
+];
+for (const [label, text, expected] of straddle) {
+  const found = await hits(text, "D01a");
+  check(`quote overlap: ${label}`, found.join("|") === expected.join("|"), JSON.stringify(found));
+}
+
 // Not protected: headings, unclosed quotes, text after a closed quote, table cells.
 const openCases: [string, string, number][] = [
   ["heading", `## ${d01a}\n\n正文。`, 1],

@@ -184,6 +184,34 @@ export function protectSpans(text: string): ProtectedSpan[] {
   return merged;
 }
 
+/** The protected spans that overlap [start, end), in order. */
+export function overlappingSpans(
+  start: number,
+  end: number,
+  protectedSpans: readonly ProtectedSpan[],
+): ProtectedSpan[] {
+  let low = 0;
+  let high = protectedSpans.length;
+  while (low < high) {
+    const middle = low + Math.floor((high - low) / 2);
+    const span = protectedSpans[middle];
+    if (span !== undefined && span.end <= start) {
+      low = middle + 1;
+    } else {
+      high = middle;
+    }
+  }
+  const found: ProtectedSpan[] = [];
+  for (let index = low; index < protectedSpans.length; index += 1) {
+    const span = protectedSpans[index];
+    if (span === undefined || span.start >= end) {
+      break;
+    }
+    found.push(span);
+  }
+  return found;
+}
+
 export function overlapsProtected(
   start: number,
   end: number,

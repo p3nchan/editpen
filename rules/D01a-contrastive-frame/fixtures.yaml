@@ -48,6 +48,16 @@ fixtures:
     expect: fail
     spans: [[3, 16]]
     note: 「不只是 X，而是 Y」（09-28 Pingu 補充）
+  - id: D01a-fail-009
+    text: 小白點不是「卵齒」，而是幫他破殼的工具。
+    expect: fail
+    spans: [[3, 19]]
+    note: X 裡有引號的詞，句型本身不在引號裡，照樣提出
+  - id: D01a-fail-010
+    text: 小白點不是沾到的髒東西，而是幫他破殼的「卵齒」。
+    expect: fail
+    spans: [[3, 23]]
+    note: Y 裡有引號的詞，句型本身不在引號裡，照樣提出
   - id: D01a-pass-004
     text: 這次改版不只是換了介面，還把同步速度提高了一倍。
     expect: pass
@@ -64,3 +74,7 @@ fixtures:
     text: 這不是我的錯——。而是他沒說清楚。
     expect: pass
     note: 破折號分支不跨句
+  - id: D01a-pass-008
+    text: 他說那叫「不是髒東西，而是卵齒」。
+    expect: pass
+    note: 整個句型都在引號裡，是引述

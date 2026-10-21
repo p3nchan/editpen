@@ -3,7 +3,7 @@ import type {
   DetectorPattern,
   ProtectedSpan,
 } from "../types.js";
-import { overlapsProtected } from "../protect.js";
+import { overlappingSpans } from "../protect.js";
 
 export interface RegexMatch {
   start: number;
@@ -42,14 +42,64 @@ function cachedFor(item: object, regex: string, flags?: string): RegExp {
   return value;
 }
 
+// Sticky copy of a pattern's regex, for re-matching at one position.
+const stickyFor = new WeakMap<object, RegExp>();
+
+function sticky(item: object, regex: RegExp): RegExp {
+  let value = stickyFor.get(item);
+  if (value === undefined) {
+    value = new RegExp(regex.source, regex.flags.replace("g", "") + "y");
+    stickyFor.set(item, value);
+  }
+  return value;
+}
+
+/**
+ * Whether protection drops a match at `index` in `text` (document offsets
+ * `start`/`end`). Code, URL, frontmatter and blockquote spans drop any match
+ * that touches them. A quote drops only a match that lies inside it: a match
+ * that starts in a quote and runs past it is still inside when the same
+ * pattern also matches there with the text cut at the quote's end (a quoted
+ * example of the pattern followed by more text); otherwise it straddles the
+ * quote and is kept, as is a match that starts before a quote.
+ */
+function isProtected(
+  item: object,
+  regex: RegExp,
+  text: string,
+  index: number,
+  start: number,
+  end: number,
+  protectedSpans: readonly ProtectedSpan[],
+  offset: number,
+): boolean {
+  for (const span of overlappingSpans(start, end, protectedSpans)) {
+    if (span.kind !== "quote") {
+      return true;
+    }
+    if (start < span.start) {
+      continue;
+    }
+    if (end <= span.end) {
+      return true;
+    }
+    const inner = sticky(item, regex);
+    inner.lastIndex = index;
+    if (inner.exec(text.slice(0, span.end - offset)) !== null) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function isExcluded(text: string, excludes: readonly DetectorExclude[]): boolean {
   return excludes.some((exclude) => cachedFor(exclude, exclude.regex, exclude.flags).test(text));
 }
 
 /**
- * All matches of `patterns` in `text` that do not overlap a protected span.
- * A match that overlaps protection is dropped and the search resumes one code
- * point after where it started, so a protected hit never hides a later
+ * All matches of `patterns` in `text` that protection does not drop (see
+ * isProtected). After a dropped match the search resumes one code point
+ * after where it started, so a protected hit never hides a later
  * unprotected one. `offset` shifts `text` indices into document offsets.
  */
 export function runRegexDetector(
@@ -72,7 +122,7 @@ export function runRegexDetector(
     for (let match = regex.exec(text); match !== null; match = regex.exec(text)) {
       const start = offset + match.index;
       const end = start + match[0].length;
-      if (match[0].length === 0 || overlapsProtected(start, end, protectedSpans)) {
+      if (match[0].length === 0 || isProtected(pattern, regex, text, match.index, start, end, protectedSpans, offset)) {
         const unit = text.charCodeAt(match.index);
         regex.lastIndex = match.index + (unit >= 0xd800 && unit <= 0xdbff ? 2 : 1);
         continue;

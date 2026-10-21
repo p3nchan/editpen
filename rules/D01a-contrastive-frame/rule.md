@@ -49,7 +49,7 @@ variants:
   zh-cn: { evidence: practitioner, measured: false }
 false_positives:
   - context: 引述中的原話
-    fixtures: [D01a-pass-001]
+    fixtures: [D01a-pass-001, D01a-pass-008]
   - context: 「不是 X」放句尾做必要釐清
     fixtures: [D01a-pass-002]
   - context: 編輯性的實質比較
@@ -79,7 +79,7 @@ measurement: null
 
 ## 什麼時候不算
 
-讀者真的會誤解 X 的時候留；「不是 X」放在主張之後補釐清的時候留。引述內容也不歸到作者名下。「不只是 X，還／也是／更是 Y」是一般的遞進句，這條不抓（「更是」的硬升華歸 F06a）；破折號後面只是補充說明、沒有「而是」，也不抓。
+讀者真的會誤解 X 的時候留；「不是 X」放在主張之後補釐清的時候留。引述內容也不歸到作者名下：整個句型都在引號裡才不算，X 或 Y 裡只有一個詞加了引號，照樣提出。「不只是 X，還／也是／更是 Y」是一般的遞進句，這條不抓（「更是」的硬升華歸 F06a）；破折號後面只是補充說明、沒有「而是」，也不抓。
 
 ## 怎麼改
 
