@@ -226,10 +226,11 @@ check("penchan: M01c error as house policy, D04a keeps its evidence level", leve
 
 // A dropped match wholly inside a quote or starting in code resumes at its
 // end; a later unprotected match is still found.
-for (const [label, text] of [
+const resumeCases: [string, string][] = [
   ["after a quoted dash run", "「————」他走了——再也沒回來。"],
   ["after a dash run in code", "`————`他走了——再也沒回來。"],
-]) {
+];
+for (const [label, text] of resumeCases) {
   const dashes = (await node.lint(text, { profile: "penchan", ruleIds: ["M01c"] })).findings.map((f) => f.match);
   check(`M01c ${label}`, dashes.join("|") === "——", dashes.join("|"));
 }
