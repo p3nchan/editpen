@@ -1,6 +1,7 @@
 // Pure data types shared by the Node loader, the core engine and the browser entry.
 
-export type Scope = "core" | "core-candidate" | "zh-tw" | "experimental";
+/** `house`: a maintainer's own editing policy, loaded only by profiles that include it (never zh / zh-tw). */
+export type Scope = "core" | "core-candidate" | "zh-tw" | "experimental" | "house";
 export type RuleStatus =
   | "measured-AI"
   | "measured-translationese"
@@ -97,6 +98,10 @@ export interface Profile {
   candidate_ceiling: Severity;
   lexicons?: string[];
   compose?: Record<string, string>;
+  /** Rule ids this profile runs by default, whatever their global default (src/engine/defaults.ts). */
+  enable?: string[];
+  /** House severity per rule id: replaces the evidence-based severity; findings carry `housePolicy: true`. */
+  severity?: Record<string, Severity>;
 }
 
 export interface ProtectedSpan {
@@ -143,6 +148,8 @@ export interface Finding {
   value?: number;
   threshold?: number;
   supportingSpans?: SourceSpan[];
+  /** Present when the severity comes from the profile's house policy, not from evidence. */
+  housePolicy?: true;
 }
 
 export interface Report {

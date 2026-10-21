@@ -27,7 +27,16 @@ export function severityCeiling(rule: EngineRule): Severity {
   return "error";
 }
 
+/** True when the profile sets this rule's severity as house policy (not evidence). */
+export function isHouseSeverity(rule: EngineRule, profile?: Profile): boolean {
+  return profile?.severity?.[rule.id] !== undefined;
+}
+
 export function effectiveSeverity(rule: EngineRule, profile?: Profile): Severity {
+  const house = profile?.severity?.[rule.id];
+  if (house !== undefined) {
+    return house;
+  }
   let severity = lowerSeverity(rule.severity.default, severityCeiling(rule));
   if (profile !== undefined && rule.scope === "core-candidate") {
     severity = lowerSeverity(severity, profile.candidate_ceiling);

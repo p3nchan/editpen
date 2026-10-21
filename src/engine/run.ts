@@ -17,7 +17,10 @@ export async function lint(text: string, options: LintOptions = {}): Promise<Rep
       : await loadProfile(rulesDir, options.profile ?? "zh-tw");
   const rules = selectRules(await loadRules(rulesDir, profile), {
     ruleIds: options.ruleIds,
-    enable: options.enable,
+    // A profile's `enable` changes its default set; an explicit ruleIds list ignores it.
+    enable: options.ruleIds === undefined && profile.enable !== undefined
+      ? [...profile.enable, ...(options.enable ?? [])]
+      : options.enable,
     disable: options.disable,
     experimental: options.experimental,
   });

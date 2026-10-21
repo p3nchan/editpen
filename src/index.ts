@@ -18,7 +18,7 @@ export async function explain(ruleId: string, options: LintOptions = {}): Promis
   const allScopes = {
     id: "all",
     name: "All rules",
-    include: { scope: ["core", "core-candidate", "zh-tw", "experimental"] as const },
+    include: { scope: ["core", "core-candidate", "zh-tw", "experimental", "house"] as const },
     candidate_ceiling: "warn" as const,
   };
   const rules = await loadRules(rulesDir, {

@@ -9,7 +9,7 @@ import { maskProtectedText, protectSpans } from "./protect.js";
 import { runDensityRule } from "./kinds/density.js";
 import { runMetricRule } from "./kinds/metric.js";
 import { runPatternRule } from "./kinds/pattern.js";
-import { effectiveSeverity } from "./severity.js";
+import { effectiveSeverity, isHouseSeverity } from "./severity.js";
 import { createLocator, splitBlocks, splitSentences, type TextUnit } from "./text.js";
 
 export interface CoreInput {
@@ -127,6 +127,18 @@ function createContext(original: string, profile: Profile): LintContext {
 }
 
 function runRule(
+  rule: EngineRule,
+  context: LintContext,
+  profile: Profile,
+  lexicons: ReadonlyMap<string, readonly string[]>,
+): Finding[] {
+  const findings = runRuleKind(rule, context, profile, lexicons);
+  return isHouseSeverity(rule, profile)
+    ? findings.map((finding) => ({ ...finding, housePolicy: true as const }))
+    : findings;
+}
+
+function runRuleKind(
   rule: EngineRule,
   context: LintContext,
   profile: Profile,

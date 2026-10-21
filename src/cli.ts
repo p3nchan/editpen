@@ -10,7 +10,7 @@ import { loadProfile, loadRules, type Profile, type Rule, type Severity } from "
 import { defaultRulesDir, lint } from "./engine/run.js";
 import { ruleDefault } from "./engine/defaults.js";
 import { evidenceGrade, profileVariant } from "./engine/evidence.js";
-import { effectiveSeverity, severityCeiling } from "./engine/severity.js";
+import { effectiveSeverity, isHouseSeverity, severityCeiling } from "./engine/severity.js";
 import type { Finding, SourceSpan } from "./engine/types.js";
 import { formatHuman } from "./formats/human.js";
 import { formatJson } from "./formats/json.js";
@@ -45,7 +45,7 @@ interface LedgerInfo {
 const allRulesProfile: Profile = {
   id: "all",
   name: "All rules",
-  include: { scope: ["core", "core-candidate", "zh-tw", "experimental"] },
+  include: { scope: ["core", "core-candidate", "zh-tw", "experimental", "house"] },
   candidate_ceiling: "warn",
 };
 
@@ -191,7 +191,15 @@ async function checkProfiles(rulesDir: string, errors: string[]): Promise<void> 
       continue;
     }
     try {
-      await loadProfile(rulesDir, entry.name.slice(0, -5));
+      const profile = await loadProfile(rulesDir, entry.name.slice(0, -5));
+      // `enable` and house `severity` may name only rules this profile loads.
+      const named = [...(profile.enable ?? []), ...Object.keys(profile.severity ?? {})];
+      if (named.length > 0) {
+        const loaded = new Set((await loadRules(rulesDir, profile)).map((rule) => rule.id));
+        for (const id of named.filter((ruleId) => !loaded.has(ruleId))) {
+          errors.push(`profile ${profile.id}: ${id} is not a rule in this profile's scopes`);
+        }
+      }
     } catch (error: unknown) {
       errors.push(error instanceof Error ? error.message : String(error));
     }
@@ -342,8 +350,10 @@ program
     process.stdout.write("id\tdefault\tseverity\tevidence\tscope\ttitle\n");
     for (const rule of rules) {
       const grade = evidenceGrade(rule, profileVariant(profile));
+      const state = profile.enable?.includes(rule.id) === true ? "on" : ruleDefault(rule.id);
+      const severity = `${effectiveSeverity(rule, profile)}${isHouseSeverity(rule, profile) ? " (house policy)" : ""}`;
       process.stdout.write(
-        `${rule.id}\t${ruleDefault(rule.id)}\t${effectiveSeverity(rule, profile)}\t${grade}\t${rule.scope}\t${rule.title}\n`,
+        `${rule.id}\t${state}\t${severity}\t${grade}\t${rule.scope}\t${rule.title}\n`,
       );
     }
   });

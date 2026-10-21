@@ -56,10 +56,14 @@ async function loadProfileWithAncestors(
   );
   const scopes = [...new Set([...parent.include.scope, ...selectedProfile.include.scope])];
   const lexicons = [...new Set([...(parent.lexicons ?? []), ...(selectedProfile.lexicons ?? [])])];
+  const enable = [...new Set([...(parent.enable ?? []), ...(selectedProfile.enable ?? [])])];
+  const severity = { ...parent.severity, ...selectedProfile.severity };
   return {
     ...selectedProfile,
     include: { scope: scopes },
     ...(lexicons.length > 0 ? { lexicons } : {}),
+    ...(enable.length > 0 ? { enable } : {}),
+    ...(Object.keys(severity).length > 0 ? { severity } : {}),
   };
 }
 

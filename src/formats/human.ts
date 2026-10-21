@@ -17,7 +17,7 @@ export function formatHuman(report: Report, sourceName = "<text>"): string {
   }
   const lines = report.findings.map((finding) => {
     const position = `${sourceName}:${finding.span.line}:${finding.span.column}`;
-    const evidence = `[${finding.status}, ${finding.evidenceGrade}]`;
+    const evidence = `[${finding.status}, ${finding.evidenceGrade}${finding.housePolicy === true ? ", house policy" : ""}]`;
     const measurement = finding.value === undefined
       ? ""
       : ` (${finding.value.toFixed(3)}; threshold ${finding.threshold?.toFixed(3) ?? "n/a"})`;
