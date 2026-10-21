@@ -54,6 +54,73 @@ function sticky(item: object, regex: RegExp): RegExp {
   return value;
 }
 
+// Code points each pattern can consume, read off its source when it is only
+// literals, escaped punctuation, plain classes, groups, quantifiers, anchors
+// and lookarounds (lookaround contents are counted too, which only adds code
+// points); null when the source has anything else (".", "\w", a negated or
+// range class, a backreference, a named group, the i or v flag).
+const consumableFor = new WeakMap<object, ReadonlySet<number> | null>();
+
+function consumable(item: object, regex: RegExp): ReadonlySet<number> | null {
+  let value = consumableFor.get(item);
+  if (value === undefined) {
+    value = readConsumable(regex);
+    consumableFor.set(item, value);
+  }
+  return value;
+}
+
+function readConsumable(regex: RegExp): Set<number> | null {
+  if (/[iv]/u.test(regex.flags)) {
+    return null;
+  }
+  const chars = Array.from(regex.source);
+  const set = new Set<number>();
+  const add = (char: string): void => {
+    set.add(char.codePointAt(0) ?? 0);
+  };
+  for (let index = 0; index < chars.length; ) {
+    const char = chars[index] ?? "";
+    if (char === "\\") {
+      const next = chars[index + 1];
+      if (next === undefined || /[\p{L}\p{N}_]/u.test(next)) {
+        return null;
+      }
+      add(next);
+      index += 2;
+    } else if (char === "[") {
+      const close = chars.indexOf("]", index + 1);
+      const body = chars.slice(index + 1, close);
+      if (close < 0 || body[0] === "^" || body.includes("\\") || body.slice(1, -1).includes("-")) {
+        return null;
+      }
+      body.forEach(add);
+      index = close + 1;
+    } else if (char === "{") {
+      const quantifier = /^\{\d+(?:,\d*)?\}/u.exec(chars.slice(index).join(""));
+      if (quantifier === null) {
+        return null;
+      }
+      index += quantifier[0].length;
+    } else if (char === "(") {
+      const kind = chars.slice(index + 1, index + 4).join("");
+      const skip = /^\?[:=!]/u.test(kind) ? 3 : /^\?<[=!]/u.test(kind) ? 4 : kind.startsWith("?") ? 0 : 1;
+      if (skip === 0) {
+        return null;
+      }
+      index += skip;
+    } else if (")|*+?^$".includes(char)) {
+      index += 1;
+    } else if (char === ".") {
+      return null;
+    } else {
+      add(char);
+      index += 1;
+    }
+  }
+  return set;
+}
+
 function nextCodePoint(text: string, index: number): number {
   const unit = text.charCodeAt(index);
   return index + (unit >= 0xd800 && unit <= 0xdbff ? 2 : 1);
@@ -72,8 +139,9 @@ function nextCodePoint(text: string, index: number): number {
  *
  * Resume points: a match starting inside a hard span resumes at its end
  * (every match starting there touches it); a match wholly inside a quote
- * resumes at its own end, so a long protected run is scanned once, not once
- * per suffix. Any other dropped match resumes one code point after its
+ * resumes at the quote's end when no later match starting inside it can run
+ * past it (see quoteResume), so a long protected run is scanned once, not
+ * once per suffix. Any other dropped match resumes one code point after its
  * start, so it never hides a later unprotected match.
  */
 function protectedResume(
@@ -95,7 +163,7 @@ function protectedResume(
       continue;
     }
     if (end <= span.end) {
-      return end - offset;
+      return quoteResume(item, regex, text, index, span.end - offset);
     }
     const inner = sticky(item, regex);
     inner.lastIndex = index;
@@ -104,6 +172,25 @@ function protectedResume(
     }
   }
   return undefined;
+}
+
+/**
+ * Resume point after a match at `index` that lies wholly inside a quote
+ * ending at `limit` (a `text` index). A later match starting inside the quote
+ * is dropped too unless it runs past `limit`, which takes consuming the
+ * quote's last code point. So the search jumps to `limit` when no such match
+ * can exist: the quote runs to the end of `text`, or the pattern cannot
+ * consume that code point. Otherwise it steps one code point, like any drop.
+ */
+function quoteResume(item: object, regex: RegExp, text: string, index: number, limit: number): number {
+  const next = nextCodePoint(text, index);
+  if (limit >= text.length) {
+    return Math.max(text.length, next);
+  }
+  const lastUnit = text.charCodeAt(limit - 1);
+  const last = lastUnit >= 0xdc00 && lastUnit <= 0xdfff && limit >= 2 ? text.codePointAt(limit - 2) : lastUnit;
+  const set = consumable(item, regex);
+  return set !== null && last !== undefined && !set.has(last) ? Math.max(limit, next) : next;
 }
 
 function isExcluded(text: string, excludes: readonly DetectorExclude[]): boolean {

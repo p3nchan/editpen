@@ -10,6 +10,8 @@ import { parse } from "yaml";
 import type * as BrowserModule from "../src/browser/index.js";
 import type * as CoreModule from "../src/engine/core.js";
 import type * as NormalizeModule from "../src/engine/normalize.js";
+import type * as ProtectModule from "../src/engine/protect.js";
+import type * as RegexModule from "../src/engine/detectors/regex.js";
 import type * as CvModule from "../src/engine/detectors/builtin/paragraph-length-cv.js";
 import type * as NodeModule from "../src/index.js";
 
@@ -19,6 +21,8 @@ const browser = (await import(path.join(root, "dist/browser/index.js"))) as type
 // The browser entry wraps this same lintCore; used with custom rules below.
 const core = (await import(path.join(root, "dist/engine/core.js"))) as typeof CoreModule;
 const { normalizeText } = (await import(path.join(root, "dist/engine/normalize.js"))) as typeof NormalizeModule;
+const { protectRanges } = (await import(path.join(root, "dist/engine/protect.js"))) as typeof ProtectModule;
+const { runRegexDetector } = (await import(path.join(root, "dist/engine/detectors/regex.js"))) as typeof RegexModule;
 const errors: string[] = [];
 let checks = 0;
 
@@ -234,6 +238,101 @@ for (const [label, text] of resumeCases) {
   const dashes = (await node.lint(text, { profile: "penchan", ruleIds: ["M01c"] })).findings.map((f) => f.match);
   check(`M01c ${label}`, dashes.join("|") === "——", dashes.join("|"));
 }
+// A quoted frame does not hide a frame that starts inside it and runs past
+// the quote (review r2).
+const straddleText = `「不是甲乙，而是${"甲".repeat(12)}不是${"乙".repeat(12)}」，而是方法。`;
+const quotedStraddle = (await node.lint(straddleText, { profile: "penchan", ruleIds: ["D01a"] })).findings
+  .map((f) => `${f.span.start}:${f.match}`).join("|");
+check("D01a: a frame starting inside a quoted frame and running past it", quotedStraddle ===
+  `20:不是${"乙".repeat(12)}」，而是方法`, quotedStraddle);
+
+// Oracle: the regex detector reports exactly what a scan that resumes one
+// code point after every dropped match reports (the semantics before
+// protected matches could skip ahead), for every rule pattern plus synthetic
+// ones on quote-heavy texts, whole and cut into units.
+interface OraclePattern { name: string; regex: string; flags?: string }
+function oracleScan(text: string, pattern: OraclePattern, protection: ReturnType<typeof protectRanges>, offset: number): string[] {
+  const regex = new RegExp(pattern.regex, [...new Set(`${pattern.flags ?? ""}gu`)].join(""));
+  const inner = new RegExp(regex.source, regex.flags.replace("g", "") + "y");
+  const found: string[] = [];
+  for (let match = regex.exec(text); match !== null; match = regex.exec(text)) {
+    const start = offset + match.index;
+    const end = start + match[0].length;
+    let dropped = match[0].length === 0 || protection.hard.some((span) => span.start < end && start < span.end);
+    for (const span of protection.quotes) {
+      if (dropped || !(span.start < end && start < span.end) || start < span.start) continue;
+      inner.lastIndex = match.index;
+      dropped = end <= span.end || inner.exec(text.slice(0, span.end - offset)) !== null;
+    }
+    if (dropped) {
+      regex.lastIndex = match.index + ((text.codePointAt(match.index) ?? 0) > 0xffff ? 2 : 1);
+      continue;
+    }
+    found.push(`${start}-${end}`);
+  }
+  return found.sort();
+}
+const oraclePatterns: OraclePattern[] = [
+  { name: "straddle", regex: "ab|b」c" },
+  { name: "dash run", regex: "—{2,}" },
+  { name: "dash run + closer", regex: "—{2,}」?" },
+  { name: "dash or closer", regex: "[—」]{2,}" },
+  { name: "lookbehind dash", regex: "(?<=—)—+" },
+  { name: "lazy any", regex: "甲.+?乙" },
+  { name: "negated class", regex: "[^，。]+而是" },
+];
+const seenPatterns = new Set<string>();
+for (const profile of ["zh", "zh-tw", "penchan"]) {
+  for (const rule of await node.loadRules(path.join(root, "rules"), profile)) {
+    for (const pattern of rule.detector.patterns ?? []) {
+      const key = `${pattern.flags ?? ""}/${pattern.regex ?? ""}`;
+      if (pattern.regex !== undefined && !seenPatterns.has(key)) {
+        seenPatterns.add(key);
+        oraclePatterns.push({ name: `${rule.id}/${pattern.name}`, regex: pattern.regex,
+          ...(pattern.flags === undefined ? {} : { flags: pattern.flags }) });
+      }
+    }
+  }
+}
+const oracleTexts = [
+  straddleText,
+  "「ab」c",
+  "「ab」c「ab」c「abab」cc",
+  `「${"—".repeat(300)}」${"—".repeat(5)}`,
+  `「${"—".repeat(300)}」`,
+  `前文「${"—".repeat(50)}」——後文`,
+  "「——『——』——」——「」——",
+  "「不是甲，而是乙」「不是丙」，而是丁。",
+  "「『不是甲，而是乙』不是丙」，而是丁。他說：「這不是工具」，而是方法。",
+  "“不是甲，而是乙”不是丙”，而是丁。\"不是\"，而是",
+  "「`不是甲`，而是乙」不是丙，而是丁。「https://a.example/不是」，而是",
+  "「不是甲，而是乙\n\n不是丙」，而是丁。",
+  "甲「甲乙」乙「甲」乙——「——」——",
+  "「𠀀——𠀀」——𠀀「——",
+  `「${"不是甲，而是乙。".repeat(20)}」不是丙，而是丁。`,
+  "首先，「其次，此外」，然而「最後」。軟件「硬件」數據庫。",
+];
+let oracleComparisons = 0;
+const oracleFailures: string[] = [];
+for (const text of oracleTexts) {
+  const protection = protectRanges(text);
+  // Whole text, a suffix unit and a prefix unit (units can end inside a quote).
+  const units: [number, string][] = [[0, text]];
+  for (const cut of [1, 3, Math.floor(text.length / 2)]) {
+    if (cut < text.length) units.push([cut, text.slice(cut)], [0, text.slice(0, text.length - cut)]);
+  }
+  for (const pattern of oraclePatterns) {
+    for (const [offset, unit] of units) {
+      oracleComparisons += 1;
+      const expected = oracleScan(unit, pattern, protection, offset).join();
+      const actual = runRegexDetector(unit, [pattern], protection, [], offset)
+        .map((m) => `${m.start}-${m.end}`).sort().join();
+      if (expected !== actual) oracleFailures.push(`${pattern.name} @${offset} on ${JSON.stringify(unit.slice(0, 30))}: ${expected} vs ${actual}`);
+    }
+  }
+}
+check(`regex detector = per-code-point oracle (${oracleComparisons} comparisons)`, oracleFailures.length === 0,
+  oracleFailures.slice(0, 5).join("; "));
 
 // Non-prose blocks before the opening paragraph do not use up F12b's
 // one-paragraph budget.
