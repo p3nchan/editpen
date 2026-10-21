@@ -100,6 +100,34 @@ No findings. after.md
 
 被標出來不代表寫錯，只是值得回頭看一眼。每條規則都寫了「什麼時候不算」，用 `npx editpen explain <規則>` 就看得到。
 
+## 小企鵝模式
+
+小企鵝自己發文前用的是更嚴格的設定：`penchan` profile，叫做「小企鵝模式」。
+
+```bash
+npx editpen lint 你的文章.md -p penchan
+npx editpen lint 你的文章.md -p penchan --max-warnings 0   # 發文前的關卡：有 error 或任何 warn，結束碼都是 1
+```
+
+小企鵝模式會：
+
+- 跑上表全部 16 條規則，實驗規則也一起開。
+- 再加 8 條只在這個模式出現的規則，內容是小企鵝個人的用字、標點和開頭偏好（見下表）。
+- 依小企鵝的發文檢查清單設定每條規則的等級，例如「不是 X，而是 Y」在這裡是 error。這些等級在輸出裡標成「house policy」，表示來自個人規範，不是來自證據。
+
+| 規則 | 抓什麼 |
+|---|---|
+| D01b | 「從來不是／其實不是」與「表面上…，實際上…」對比句 |
+| D04c | 中國大陸網路流行語與宣傳用語，嚴格名單（「降本增效」「yyds」） |
+| D04d | 中國大陸網路用語與 AI 圈用語（「復盤」「滿血版」「信息」） |
+| D09c | 「撐住」「撐得住」「撐不住」 |
+| D09d | 套話與模糊感覺詞（「拆開來看」「放回桌上」「很真」） |
+| F12a | 開頭三段裡的「最重要的是你…」金句 |
+| F12b | 第一句就打比方（「就像」「好比」「宛如」） |
+| M01c | 雙長橫線「——」 |
+
+這 8 條是一位編輯的寫作偏好，不是 AI 偵測器：被標出來只代表不符合小企鵝的發文習慣。預設的 `zh-tw`、`zh` 和網頁版都不會載入它們。
+
 ## 我們量了什麼
 
 上線前我們做了一次小規模實測，只公開數字，不公開原文：
@@ -175,6 +203,8 @@ The name comes from Stephen Chow's *Kung Fu Hustle* (2004): a dying character tr
 **Try it** at [penchan.co/editpen](https://penchan.co/editpen/) (the check runs in your browser; nothing is uploaded), or run `npx editpen lint your-file.md` (add `--experimental` for all rules). `lint` exits 1 when there is an error; add `--max-warnings <n>` to also exit 1 when there are more than n warnings (`--max-warnings 0` fails on any warning).
 
 **Defaults.** Three rules are on by default: two because our data supports them, one because Taiwan's Ministry of Education lists the terms: "not X but Y" frames (D01a), mainland-only terms per Taiwan's Ministry of Education list (D04a), and dense dashes (M01b, as a hint). The other thirteen are experimental: some are classic template patterns our AI drafts rarely produced, others also flag human writing too often or are not yet validated.
+
+**小企鵝模式 (`-p penchan`).** The strict setting 小企鵝 uses before posting: `npx editpen lint your-file.md -p penchan --max-warnings 0`. It runs all sixteen public rules, experimental ones included, adds eight house rules for one editor's wording, punctuation and opening preferences (D01b, D04c, D04d, D09c, D09d, F12a, F12b, M01c), and sets each rule's level from that editor's pre-posting checklist; those levels are marked "house policy" in the output. `penchan` is one editor's house style for zh-TW outbound posts; its word lists are preferences, not evidence of AI authorship. The default `zh-tw` and `zh` profiles and the web page never load the house rules.
 
 **What we measured.** 172 pre-ChatGPT Traditional Chinese samples (256,756 characters, Jan 2018 to 17 Nov 2022) against 192 AI drafts (Claude Opus 5.5 / Sonnet and GPT-6, plain prompts, including social-media genres). Grand openers (在當今…的時代) and full signpost chains (首先…其次…最後) did not appear in any AI draft, and 總結來說 appeared once; single 首先/此外 still show up in the 64 topic-matched Claude drafts (about 3× and 1.7× the human rate) but never densely enough to trigger a rule, and GPT used none. "Not X but Y" did: 0.07 per 1,000 characters in human text versus 0.19–1.28 in AI drafts. One prompt set, two model families, small samples: read these numbers as direction, never as a way to judge authorship.
 
