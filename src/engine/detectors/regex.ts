@@ -1,7 +1,7 @@
 import type {
   DetectorExclude,
   DetectorPattern,
-  ProtectedSpan,
+  Protection,
 } from "../types.js";
 import { overlappingSpans } from "../protect.js";
 
@@ -56,8 +56,9 @@ function sticky(item: object, regex: RegExp): RegExp {
 
 /**
  * Whether protection drops a match at `index` in `text` (document offsets
- * `start`/`end`). Code, URL, frontmatter and blockquote spans drop any match
- * that touches them. A quote drops only a match that lies inside it: a match
+ * `start`/`end`). Hard spans (code, URL, frontmatter, blockquote) drop any
+ * match that touches them. A quote drops only a match that lies inside it
+ * (code or a URL inside the quote does not widen that to a veto): a match
  * that starts in a quote and runs past it is still inside when the same
  * pattern also matches there with the text cut at the quote's end (a quoted
  * example of the pattern followed by more text); otherwise it straddles the
@@ -70,13 +71,13 @@ function isProtected(
   index: number,
   start: number,
   end: number,
-  protectedSpans: readonly ProtectedSpan[],
+  protection: Protection,
   offset: number,
 ): boolean {
-  for (const span of overlappingSpans(start, end, protectedSpans)) {
-    if (span.kind !== "quote") {
-      return true;
-    }
+  if (overlappingSpans(start, end, protection.hard).length > 0) {
+    return true;
+  }
+  for (const span of overlappingSpans(start, end, protection.quotes)) {
     if (start < span.start) {
       continue;
     }
@@ -105,7 +106,7 @@ function isExcluded(text: string, excludes: readonly DetectorExclude[]): boolean
 export function runRegexDetector(
   text: string,
   patterns: readonly DetectorPattern[],
-  protectedSpans: readonly ProtectedSpan[],
+  protection: Protection,
   excludes: readonly DetectorExclude[] = [],
   offset = 0,
 ): RegexMatch[] {
@@ -122,7 +123,7 @@ export function runRegexDetector(
     for (let match = regex.exec(text); match !== null; match = regex.exec(text)) {
       const start = offset + match.index;
       const end = start + match[0].length;
-      if (match[0].length === 0 || isProtected(pattern, regex, text, match.index, start, end, protectedSpans, offset)) {
+      if (match[0].length === 0 || isProtected(pattern, regex, text, match.index, start, end, protection, offset)) {
         const unit = text.charCodeAt(match.index);
         regex.lastIndex = match.index + (unit >= 0xd800 && unit <= 0xdbff ? 2 : 1);
         continue;

@@ -1,11 +1,11 @@
 // Pure lint core: no filesystem, no Node builtins. Takes already-loaded data.
 // Both the Node runner (run.ts) and the browser entry (browser/index.ts) call lintCore.
 
-import type { EngineRule, Finding, Profile, ProtectedSpan, Report, SourceSpan } from "./types.js";
+import type { EngineRule, Finding, Profile, Protection, ProtectedSpan, Report, SourceSpan } from "./types.js";
 import { ruleDefault } from "./defaults.js";
 import { profileVariant, type ProfileVariant } from "./evidence.js";
 import { normalizeText } from "./normalize.js";
-import { frontmatterLength, frontmatterProse, maskProtectedText, protectSpans } from "./protect.js";
+import { frontmatterLength, frontmatterProse, maskProtectedText, mergedSpans, protectRanges } from "./protect.js";
 import { runDensityRule } from "./kinds/density.js";
 import { runMetricRule } from "./kinds/metric.js";
 import { runPatternRule } from "./kinds/pattern.js";
@@ -76,13 +76,15 @@ export interface LintContext {
   /** The normalised text (LF, NFC) that rules match against. */
   text: string;
   protectedSpans: readonly ProtectedSpan[];
+  /** `protectedSpans` with hard and quote spans kept apart, for regex matching. */
+  protection: Protection;
   /**
-   * Spans that drop pattern-rule matches: `protectedSpans`, except that the
-   * profile's `frontmatter_prose` values are open (quotes in them stay
-   * protected). Metric and density rules and `proseParagraphs` keep the
-   * whole frontmatter protected.
+   * Protection for pattern rules: `protection`, except that the profile's
+   * `frontmatter_prose` values are open (quotes in them stay protected).
+   * Metric and density rules and `proseParagraphs` keep the whole frontmatter
+   * protected.
    */
-  patternSpans: readonly ProtectedSpan[];
+  patternProtection: Protection;
   /** The profile's language variant, for evidence grades. */
   variant: ProfileVariant;
   /** Normalised [start, end) -> located span in the caller's original text. */
@@ -125,9 +127,10 @@ function insideNonProse(unit: TextUnit, spans: readonly ProtectedSpan[]): boolea
 function createContext(original: string, profile: Profile): LintContext {
   const normalized = normalizeText(original);
   const { text } = normalized;
-  const protectedSpans = protectSpans(text);
+  const protection = protectRanges(text);
+  const protectedSpans = mergedSpans(protection);
   const prose = frontmatterProse(text, profile.frontmatter_prose ?? []);
-  const patternSpans = prose.length > 0 ? protectSpans(text, prose) : protectedSpans;
+  const patternProtection = prose.length > 0 ? protectRanges(text, prose) : protection;
   // Blocks never join a frontmatter value with the next key: the frontmatter
   // contributes only its prose values as blocks.
   const frontmatterEnd = prose.length > 0 ? frontmatterLength(text) : 0;
@@ -150,7 +153,8 @@ function createContext(original: string, profile: Profile): LintContext {
     original,
     text,
     protectedSpans,
-    patternSpans,
+    protection,
+    patternProtection,
     variant: profileVariant(profile),
     span(start, end) {
       locate ??= createLocator(original);

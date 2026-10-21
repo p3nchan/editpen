@@ -118,6 +118,12 @@ export interface ProtectedSpan {
   kind: "code" | "url" | "frontmatter" | "quote" | "blockquote" | "mixed";
 }
 
+/** Protection for pattern matching: hard spans and quote spans, each sorted and disjoint. */
+export interface Protection {
+  hard: readonly ProtectedSpan[];
+  quotes: readonly ProtectedSpan[];
+}
+
 /**
  * A located span in the text the caller passed to `lint` / `lintText`
  * (before any normalisation).

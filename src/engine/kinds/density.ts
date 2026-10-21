@@ -67,7 +67,7 @@ export function runDensityRule(
   const regexMatches = runRegexDetector(
     text,
     rule.detector.patterns ?? [],
-    protectedSpans,
+    context.protection,
     rule.detector.exclude ?? [],
   );
   const matches = [...lexiconMatches, ...regexMatches]

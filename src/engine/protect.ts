@@ -1,4 +1,4 @@
-import type { ProtectedSpan } from "./types.js";
+import type { Protection, ProtectedSpan } from "./types.js";
 
 // Protected spans: text that rules must not flag because the author did not
 // write it in their own voice (quotations) or it is not prose (code, URLs,
@@ -212,31 +212,34 @@ export function frontmatterProse(text: string, keys: readonly string[]): Range[]
   return ranges;
 }
 
-/**
- * Expects LF text (the engine normalises line endings first). Sorted, merged.
- * `open` = frontmatter ranges left unprotected (from frontmatterProse); quote
- * pairs inside them are protected as in prose.
- */
-export function protectSpans(text: string, open: readonly Range[] = []): ProtectedSpan[] {
-  const spans: ProtectedSpan[] = [];
+function collectSpans(text: string, open: readonly Range[]): { nonQuote: ProtectedSpan[]; quotes: ProtectedSpan[] } {
+  const nonQuote: ProtectedSpan[] = [];
   const front = frontmatter.exec(text);
   if (front !== null) {
     let cursor = 0;
     for (const range of open) {
       if (range.start > cursor) {
-        spans.push({ start: cursor, end: range.start, kind: "frontmatter" });
+        nonQuote.push({ start: cursor, end: range.start, kind: "frontmatter" });
       }
       cursor = range.end;
     }
-    spans.push({ start: cursor, end: front[0].length, kind: "frontmatter" });
+    nonQuote.push({ start: cursor, end: front[0].length, kind: "frontmatter" });
   }
-  lineSpans(text, spans);
-  add(spans, text, url, "url");
-  spans.sort((left, right) => left.start - right.start || left.end - right.end);
-  const nonQuote = spans.slice();
-  quoteSpans(text, nonQuote, spans);
-  spans.sort((left, right) => left.start - right.start || left.end - right.end);
+  lineSpans(text, nonQuote);
+  add(nonQuote, text, url, "url");
+  nonQuote.sort(bySpan);
+  const quotes: ProtectedSpan[] = [];
+  quoteSpans(text, nonQuote, quotes);
+  quotes.sort(bySpan);
+  return { nonQuote, quotes };
+}
 
+function bySpan(left: ProtectedSpan, right: ProtectedSpan): number {
+  return left.start - right.start || left.end - right.end;
+}
+
+// Sorted spans -> disjoint spans; a union of different kinds is "mixed".
+function merge(spans: readonly ProtectedSpan[]): ProtectedSpan[] {
   const merged: ProtectedSpan[] = [];
   for (const span of spans) {
     const previous = merged.at(-1);
@@ -250,6 +253,31 @@ export function protectSpans(text: string, open: readonly Range[] = []): Protect
     }
   }
   return merged;
+}
+
+/**
+ * Expects LF text (the engine normalises line endings first). Sorted, merged.
+ * `open` = frontmatter ranges left unprotected (from frontmatterProse); quote
+ * pairs inside them are protected as in prose.
+ */
+export function protectSpans(text: string, open: readonly Range[] = []): ProtectedSpan[] {
+  return mergedSpans(protectRanges(text, open));
+}
+
+/** Hard and quote spans merged into one sorted, disjoint list (protectSpans). */
+export function mergedSpans(protection: Protection): ProtectedSpan[] {
+  return merge([...protection.hard, ...protection.quotes].sort(bySpan));
+}
+
+/**
+ * The same spans as protectSpans, kept apart for pattern matching: `hard` =
+ * code, URL, frontmatter and blockquote spans (merged); `quotes` = outermost
+ * quote pairs. A quote that contains code or a URL stays a quote, so the
+ * code does not turn the whole quote into a hard span.
+ */
+export function protectRanges(text: string, open: readonly Range[] = []): Protection {
+  const { nonQuote, quotes } = collectSpans(text, open);
+  return { hard: merge(nonQuote), quotes: merge(quotes) };
 }
 
 /** The protected spans that overlap [start, end), in order. */

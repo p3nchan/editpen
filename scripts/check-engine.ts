@@ -67,6 +67,13 @@ const straddle: [string, string, string[]][] = [
   ["whole match inside a quote", "他說那叫「不是髒東西，而是卵齒」。", []],
   ["quoted example followed by text", "「不是 X，而是 Y」這種對比句很常見。", []],
   ["code still drops a straddle", "小白點不是`卵齒`，而是幫他破殼的工具。", []],
+  // Code or a URL inside a quote vetoes only a match that touches it.
+  ["inline code earlier in the quote", "她說「用 `JSON` 設定的不是工具」，而是方法。", ["不是工具」，而是方法"]],
+  ["same without code", "她說「用 JSON 設定的不是工具」，而是方法。", ["不是工具」，而是方法"]],
+  ["URL earlier in the quote", "她說「看 https://example.com 不是工具」，而是方法。", ["不是工具」，而是方法"]],
+  ["code at the quote start", "「`x`，不是髒東西」，而是幫他破殼的卵齒。", ["不是髒東西」，而是幫他破殼的卵齒"]],
+  ["code later in a quote in Y", "不是髒東西，而是「卵齒。`x`」", ["不是髒東西，而是「卵齒"]],
+  ["code inside the match within a quote", "她說「不是`工具`」，而是方法。", []],
 ];
 for (const [label, text, expected] of straddle) {
   const found = await hits(text, "D01a");
