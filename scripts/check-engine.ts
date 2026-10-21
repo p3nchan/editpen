@@ -180,6 +180,26 @@ check("CLI --experimental fires every rule", sorted(cliExperimental) === allRule
   sorted(cliExperimental));
 check("browser experimental fires every rule", sorted(browserExperimental) === sorted(cliExperimental), sorted(browserExperimental));
 
+// 小企鵝模式 (rules/profiles/penchan.yaml): house rules load only there, never
+// in zh / zh-tw or the browser data; every rule it loads runs by default; its
+// house severity is marked as policy, and rules it does not map keep evidence.
+const penchanRules = await node.loadRules(path.join(root, "rules"), "penchan");
+const houseIds = penchanRules.filter((rule) => rule.scope === "house").map((rule) => rule.id).sort();
+check("penchan loads the house rules", houseIds.join() === "D01b,D04c,D04d,D09c,D09d,F12a,F12b,M01c", houseIds.join());
+for (const profile of ["zh", "zh-tw"] as const) {
+  const cardIds = browser.ruleCards(profile).map((card) => card.id);
+  check(`browser ruleCards(${profile}) has no house rule`, !cardIds.some((id) => houseIds.includes(id)), cardIds.join());
+}
+const penchanFired = new Set<string>();
+for (const text of texts) {
+  for (const id of runIds((await node.lint(text, { profile: "penchan" })).findings)) penchanFired.add(id);
+}
+check("penchan runs every rule it loads by default", sorted(penchanFired) === penchanRules.map((rule) => rule.id).sort().join(),
+  sorted(penchanFired));
+const penchanRun = await node.lint("他走了——再也沒回來。這個軟件很好用。", { profile: "penchan" });
+const levels = penchanRun.findings.map((f) => `${f.ruleId}:${f.severity}:${f.housePolicy === true ? "house" : "evidence"}`).sort().join();
+check("penchan: M01c error as house policy, D04a keeps its evidence level", levels === "D04a:warn:evidence,M01c:error:house", levels);
+
 // Evidence grade follows the profile's variant: F09a's A source is zh-CN only.
 const f09 = async (profile: string): Promise<string | undefined> =>
   (await node.lint("我們需要進行評估。", { profile, ruleIds: ["F09a"] })).findings[0]?.evidenceGrade;

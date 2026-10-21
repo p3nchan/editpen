@@ -70,9 +70,16 @@ for (const [label, text] of cases) {
     browser.lintText(text, { profile: "zh-tw", experimental: true });
     browserMs = Math.min(browserMs, performance.now() - t0);
   }
-  const ok = cliMs < budgetMs && browserMs < budgetMs;
+  // 小企鵝模式 loads the house rules on top of every zh-tw rule (CLI only).
+  let penchanMs = Infinity;
+  for (let run = 0; run < 3; run += 1) {
+    const t0 = performance.now();
+    await node.lint(text, { profile: "penchan" });
+    penchanMs = Math.min(penchanMs, performance.now() - t0);
+  }
+  const ok = cliMs < budgetMs && browserMs < budgetMs && penchanMs < budgetMs;
   process.stdout.write(
-    `${ok ? "ok  " : "SLOW"} ${label.padEnd(30)} ${Buffer.byteLength(text, "utf8")} B, ${report?.findings.length ?? 0} findings: CLI engine ${cliMs.toFixed(0)} ms, browser ${browserMs.toFixed(0)} ms\n`,
+    `${ok ? "ok  " : "SLOW"} ${label.padEnd(30)} ${Buffer.byteLength(text, "utf8")} B, ${report?.findings.length ?? 0} findings: CLI engine ${cliMs.toFixed(0)} ms, browser ${browserMs.toFixed(0)} ms, penchan ${penchanMs.toFixed(0)} ms\n`,
   );
   if (!ok) {
     failures.push(label);

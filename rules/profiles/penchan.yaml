@@ -1,0 +1,60 @@
+id: penchan
+extends: zh-tw
+name: 小企鵝模式
+# Opt-in strict house style: one editor's settings for zh-TW posts before
+# publishing. Its word lists are preferences, not evidence of AI authorship.
+include:
+  scope: [house]
+# House severity replaces the evidence ceiling for every rule listed under
+# `severity`, so this cap only applies to unlisted core-candidate rules (none).
+candidate_ceiling: error
+enable:
+  # experimental rules (src/engine/defaults.ts)
+  - D02a
+  - D04b
+  - D09a
+  - D09b
+  - F02a
+  - F05a
+  - F06a
+  - F07a
+  - F08a
+  - F09a
+  - F11a
+  - F26a
+  - M01a
+  # house rules
+  - D01b
+  - D04c
+  - D04d
+  - D09c
+  - D09d
+  - F12a
+  - F12b
+  - M01c
+# House policy, not evidence: each rule takes the level of its counterpart in
+# the internal pilot checklist (ERROR -> error, WARN -> warn, INFO -> info).
+# D04a and M01b have no counterpart of their own and keep their evidence level.
+severity:
+  D01a: error
+  D01b: error
+  D02a: warn
+  D04b: warn
+  D04c: error
+  D04d: warn
+  D09a: warn
+  D09b: error
+  D09c: error
+  D09d: warn
+  F02a: info
+  F05a: error
+  F06a: error
+  F07a: warn
+  F08a: info
+  F09a: info
+  F11a: info
+  F12a: warn
+  F12b: warn
+  F26a: warn
+  M01a: error
+  M01c: error
