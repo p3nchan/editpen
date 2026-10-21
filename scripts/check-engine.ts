@@ -201,7 +201,7 @@ check("browser experimental fires every rule", sorted(browserExperimental) === s
 // house severity is marked as policy, and rules it does not map keep evidence.
 const penchanRules = await node.loadRules(path.join(root, "rules"), "penchan");
 const houseIds = penchanRules.filter((rule) => rule.scope === "house").map((rule) => rule.id).sort();
-check("penchan loads the house rules", houseIds.join() === "D01b,D04c,D04d,D09c,D09d,F12a,F12b,M01c", houseIds.join());
+check("penchan loads the house rules", houseIds.join() === "D01b,D04c,D04d,D09c,D09d,F12a,F12b,F26b,M01c", houseIds.join());
 for (const profile of ["zh", "zh-tw"] as const) {
   const cardIds = browser.ruleCards(profile).map((card) => card.id);
   check(`browser ruleCards(${profile}) has no house rule`, !cardIds.some((id) => houseIds.includes(id)), cardIds.join());
@@ -210,11 +210,20 @@ const penchanFired = new Set<string>();
 for (const text of texts) {
   for (const id of runIds((await node.lint(text, { profile: "penchan" })).findings)) penchanFired.add(id);
 }
-check("penchan runs every rule it loads by default", sorted(penchanFired) === penchanRules.map((rule) => rule.id).sort().join(),
-  sorted(penchanFired));
+// F26a is off there (F26b replaces it); every other rule it loads runs.
+check("penchan runs every rule it loads by default", sorted(penchanFired) ===
+  penchanRules.map((rule) => rule.id).filter((id) => id !== "F26a").sort().join(), sorted(penchanFired));
 const penchanRun = await node.lint("他走了——再也沒回來。這個軟件很好用。", { profile: "penchan" });
 const levels = penchanRun.findings.map((f) => `${f.ruleId}:${f.severity}:${f.housePolicy === true ? "house" : "evidence"}`).sort().join();
 check("penchan: M01c error as house policy, D04a keeps its evidence level", levels === "D04a:warn:evidence,M01c:error:house", levels);
+
+// penchan swaps F26a for F26b: short paragraphs (7+ chars) count there.
+const shortUniform = "今天去海邊看企鵝了。\n\n牠們排成一列走路。\n\n回家時天已經黑了。";
+const shortRun = (await node.lint(shortUniform, { profile: "penchan", experimental: true })).findings.map((f) => f.ruleId);
+check("penchan: F26b fires on short uniform paragraphs, F26a stays off even with --experimental",
+  shortRun.includes("F26b") && !shortRun.includes("F26a"), shortRun.join());
+check("zh-tw F26a unchanged: paragraphs under 20 chars do not count",
+  (await hits(shortUniform, "F26a")).length === 0);
 
 // Evidence grade follows the profile's variant: F09a's A source is zh-CN only.
 const f09 = async (profile: string): Promise<string | undefined> =>

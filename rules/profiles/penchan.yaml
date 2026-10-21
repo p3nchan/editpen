@@ -21,7 +21,6 @@ enable:
   - F08a
   - F09a
   - F11a
-  - F26a
   - M01a
   # house rules
   - D01b
@@ -31,6 +30,7 @@ enable:
   - D09d
   - F12a
   - F12b
+  - F26b
   - M01c
 # House policy, not evidence: each rule takes the level of its counterpart in
 # the internal pilot checklist (ERROR -> error, WARN -> warn, INFO -> info).
@@ -55,6 +55,8 @@ severity:
   F11a: info
   F12a: warn
   F12b: warn
-  F26a: warn
+  # F26b replaces F26a here: same metric, short paragraphs (7+ chars) count.
+  F26a: "off"
+  F26b: warn
   M01a: error
   M01c: error
