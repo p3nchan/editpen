@@ -148,6 +148,22 @@ export function splitBlocks(text: string): TextUnit[] {
   return units;
 }
 
+/**
+ * True when the block is not a prose paragraph: a heading, list item, table
+ * cell, fence / frontmatter / hr marker or blockquote line. `start` is the
+ * block's offset in `text`; code and frontmatter bodies are left to the caller
+ * (they are protected spans).
+ */
+export function isMarkupBlock(text: string, start: number): boolean {
+  const lineStart = text.lastIndexOf("\n", start - 1) + 1;
+  let lineEnd = text.indexOf("\n", start);
+  if (lineEnd < 0) {
+    lineEnd = text.length;
+  }
+  const line = text.slice(lineStart, lineEnd);
+  return blockStart.test(line) || tableRow.test(line);
+}
+
 /** Code points that are not whitespace. */
 export function charCount(text: string): number {
   let count = 0;

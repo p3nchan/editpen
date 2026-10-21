@@ -52,6 +52,8 @@ export interface RuleDetector {
   builtin?: string;
   params?: Record<string, unknown>;
   exclude?: DetectorExclude[];
+  /** Pattern rules: keep only matches inside the first `paragraphs` prose paragraphs (headings, list items, tables, blockquotes, code and frontmatter do not count). */
+  within?: { paragraphs: number };
 }
 
 export interface Evidence {

@@ -10,7 +10,7 @@ import { runDensityRule } from "./kinds/density.js";
 import { runMetricRule } from "./kinds/metric.js";
 import { runPatternRule } from "./kinds/pattern.js";
 import { effectiveSeverity, isHouseSeverity } from "./severity.js";
-import { createLocator, splitBlocks, splitSentences, type TextUnit } from "./text.js";
+import { createLocator, isMarkupBlock, splitBlocks, splitSentences, type TextUnit } from "./text.js";
 
 export interface CoreInput {
   profile: Profile;
@@ -88,6 +88,29 @@ export interface LintContext {
   units(unit: "sentence" | "paragraph" | "document" | undefined): readonly TextUnit[];
   /** The normalised text with protected spans blanked (same length). */
   masked(): string;
+  /**
+   * Prose paragraphs in order: paragraph blocks minus headings, list items,
+   * table cells, markers, blockquotes, and blocks inside code or frontmatter.
+   */
+  proseParagraphs(): readonly TextUnit[];
+}
+
+// A block wholly inside a code, frontmatter or blockquote span is not prose (a
+// paragraph that is one quotation still is). Spans are sorted and disjoint.
+function insideNonProse(unit: TextUnit, spans: readonly ProtectedSpan[]): boolean {
+  let low = 0;
+  let high = spans.length;
+  while (low < high) {
+    const middle = low + Math.floor((high - low) / 2);
+    if ((spans[middle]?.end ?? 0) <= unit.start) {
+      low = middle + 1;
+    } else {
+      high = middle;
+    }
+  }
+  const span = spans[low];
+  return span !== undefined && span.kind !== "quote" && span.kind !== "url" &&
+    span.start <= unit.start && unit.end <= span.end;
 }
 
 function createContext(original: string, profile: Profile): LintContext {
@@ -98,6 +121,7 @@ function createContext(original: string, profile: Profile): LintContext {
   let blocks: TextUnit[] | undefined;
   let sentences: TextUnit[] | undefined;
   let masked: string | undefined;
+  let prose: TextUnit[] | undefined;
   return {
     original,
     text,
@@ -122,6 +146,12 @@ function createContext(original: string, profile: Profile): LintContext {
     masked() {
       masked ??= maskProtectedText(text, protectedSpans);
       return masked;
+    },
+    proseParagraphs() {
+      blocks ??= splitBlocks(text);
+      prose ??= blocks.filter((block) =>
+        !isMarkupBlock(text, block.start) && !insideNonProse(block, protectedSpans));
+      return prose;
     },
   };
 }

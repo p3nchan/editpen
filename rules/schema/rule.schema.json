@@ -104,6 +104,14 @@
               "flags": { "type": "string", "pattern": "^[dgimsuvy]*$" }
             }
           }
+        },
+        "within": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["paragraphs"],
+          "properties": {
+            "paragraphs": { "type": "integer", "minimum": 1 }
+          }
         }
       }
     },
@@ -170,7 +178,7 @@
         "properties": {
           "detector": {
             "required": ["engine", "unit", "patterns", "threshold"],
-            "properties": { "engine": { "const": "regex" } }
+            "properties": { "engine": { "const": "regex" }, "within": false }
           }
         }
       }
@@ -181,7 +189,7 @@
         "properties": {
           "detector": {
             "required": ["engine", "builtin", "params", "threshold"],
-            "properties": { "engine": { "const": "builtin" } }
+            "properties": { "engine": { "const": "builtin" }, "within": false }
           }
         }
       }

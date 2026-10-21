@@ -48,9 +48,17 @@ export function runPatternRule(
     return grade;
   };
 
+  // Positional scope: only matches wholly inside the first N prose paragraphs.
+  const within = rule.detector.within === undefined
+    ? undefined
+    : context.proseParagraphs().slice(0, rule.detector.within.paragraphs);
+
   for (const unit of context.units(rule.detector.unit)) {
     const matches = runRegexDetector(unit.text, patterns, context.protectedSpans, excludes, unit.start);
     for (const match of matches) {
+      if (within !== undefined && !within.some((block) => block.start <= match.start && match.end <= block.end)) {
+        continue;
+      }
       const span = context.span(match.start, match.end);
       findings.push({
         ruleId: rule.id,
