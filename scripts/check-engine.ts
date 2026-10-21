@@ -1,7 +1,8 @@
 // Engine behaviour checks: protected spans, markdown structure, normalisation
 // offsets, rule selection, and the loadRules regex gate. Run after `npm run build`.
 
-import { cp, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
+import { cp, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -9,6 +10,7 @@ import { parse } from "yaml";
 import type * as BrowserModule from "../src/browser/index.js";
 import type * as CoreModule from "../src/engine/core.js";
 import type * as NormalizeModule from "../src/engine/normalize.js";
+import type * as CvModule from "../src/engine/detectors/builtin/paragraph-length-cv.js";
 import type * as NodeModule from "../src/index.js";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
@@ -248,6 +250,121 @@ try {
 } finally {
   await rm(customDir, { recursive: true, force: true });
 }
+
+// House profiles (test/house): scope `house`, profile `enable` + house
+// `severity`, positional scope (`detector.within`), and `--max-warnings`.
+for (const profile of ["zh", "zh-tw"]) {
+  const scopes = (await node.loadRules(path.join(root, "rules"), profile)).map((rule) => rule.scope);
+  check(`${profile} loads no house rule`, !scopes.includes("house"), scopes.join());
+}
+const houseRoot = await mkdtemp(path.join(tmpdir(), "editpen-house-"));
+try {
+  const houseDir = path.join(houseRoot, "rules");
+  await cp(path.join(root, "rules"), houseDir, { recursive: true });
+  await cp(path.join(root, "test/house/rules"), houseDir, { recursive: true });
+  await mkdir(path.join(houseRoot, "research"));
+  await cp(path.join(root, "research/ledger.md"), path.join(houseRoot, "research/ledger.md"));
+  const cli = (...args: string[]): { code: number | null; out: string } => {
+    const result = spawnSync(process.execPath, [path.join(root, "dist/cli.js"), ...args], { encoding: "utf8" });
+    return { code: result.status, out: `${result.stdout}${result.stderr}` };
+  };
+
+  for (const profile of ["zh", "zh-tw"]) {
+    const loaded = (await node.loadRules(houseDir, profile)).map((rule) => rule.id);
+    check(`house rule stays out of ${profile}`, !loaded.includes("Z01a"), loaded.join());
+  }
+  check("house-test profile loads the house rule",
+    (await node.loadRules(houseDir, "house-test")).some((rule) => rule.id === "Z01a"));
+
+  const houseText = "我們需要進行評估。\n\n測試詞在第二段。";
+  const house = await node.lint(houseText, { profile: "house-test", rulesDir: houseDir });
+  const houseIds = house.findings.map((finding) => finding.ruleId).sort().join();
+  check("profile enable runs experimental F09a by default", houseIds === "F09a,Z01a", houseIds);
+  check("house severity raises to error and is marked house policy",
+    house.findings.every((finding) => finding.severity === "error" && finding.housePolicy === true) &&
+      house.summary.error === 2, JSON.stringify(house.findings.map((f) => [f.ruleId, f.severity, f.housePolicy])));
+  const publicRun = await node.lint(houseText, { profile: "zh-tw", rulesDir: houseDir, experimental: true });
+  check("zh-tw keeps evidence severity, no house marker",
+    publicRun.findings.some((f) => f.ruleId === "F09a" && f.severity !== "error") &&
+      publicRun.findings.every((f) => f.ruleId !== "Z01a" && f.housePolicy === undefined),
+    JSON.stringify(publicRun.findings.map((f) => [f.ruleId, f.severity])));
+  const disabled = await node.lint(houseText, { profile: "house-test", rulesDir: houseDir, disable: ["F09a"] });
+  check("--disable wins over profile enable", disabled.findings.every((f) => f.ruleId !== "F09a"));
+  const only = await node.lint(houseText, { profile: "house-test", rulesDir: houseDir, ruleIds: ["Z01a"] });
+  check("ruleIds ignores profile enable", only.findings.map((f) => f.ruleId).join() === "Z01a");
+
+  // Positional scope: only the first 2 prose paragraphs; headings, list
+  // items, table cells, blockquotes, code and frontmatter neither match nor count.
+  const positional = [
+    "---\ntitle: 測試詞\n---",
+    "# 測試詞標題",
+    "- 測試詞清單\n- 第二項",
+    "| 測試詞 | 表格 |\n|---|---|\n| 測試詞 | 列 |",
+    "> 測試詞引文",
+    "```\n測試詞程式碼\n```",
+    "第一段有測試詞。",
+    "## 小標題",
+    "第二段，測試詞。再一次測試詞。",
+    "第三段的測試詞不算。",
+  ].join("\n\n");
+  const within = await node.lint(positional, { profile: "house-test", rulesDir: houseDir, ruleIds: ["Z01a"] });
+  const lines = within.findings.map((finding) => finding.span.line).join();
+  check("within: first 2 prose paragraphs only", within.findings.length === 3 &&
+    within.findings.every((f) => f.match === "測試詞") && lines === "20,24,24", lines);
+
+  // check-rules: accepts the house rule and profile; rejects a rule default
+  // above its evidence ceiling and a profile entry naming an unknown rule.
+  const passing = cli("check-rules", "--rules-dir", houseDir);
+  check("check-rules passes with house rule + profile", passing.code === 0, passing.out);
+  const z01aPath = path.join(houseDir, "Z01a-test-house", "rule.md");
+  const z01a = await readFile(z01aPath, "utf8");
+  await writeFile(z01aPath, z01a.replace("default: warn", "default: error"));
+  const tooHigh = cli("check-rules", "--rules-dir", houseDir);
+  check("check-rules still rejects a rule default above its ceiling",
+    tooHigh.code === 1 && tooHigh.out.includes("Z01a: default severity error exceeds warn ceiling"), tooHigh.out);
+  await writeFile(z01aPath, z01a);
+  const profilePath = path.join(houseDir, "profiles", "house-test.yaml");
+  const profileSource = await readFile(profilePath, "utf8");
+  await writeFile(profilePath, profileSource.replace("Z01a: error", "Y01a: error"));
+  const unknown = cli("check-rules", "--rules-dir", houseDir);
+  check("check-rules rejects a house severity for a rule outside the profile",
+    unknown.code === 1 && unknown.out.includes("profile house-test: Y01a"), unknown.out);
+  await writeFile(profilePath, profileSource);
+
+  // --max-warnings: exit 1 only when warnings exceed n; errors still exit 1.
+  const warnFile = path.join(houseRoot, "warn.md");
+  await writeFile(warnFile, `${d01a}\n\n${d01a}`);
+  for (const [args, code] of [[[], 0], [["--max-warnings", "2"], 0], [["--max-warnings", "1"], 1], [["--max-warnings", "0"], 1]] as const) {
+    const run = cli("lint", warnFile, "-f", "json", ...args);
+    check(`lint ${args.join(" ") || "(no flag)"} with 2 warnings exits ${code}`, run.code === code, `${run.code}`);
+  }
+  for (const bad of ["-1", "x", "1.5"]) {
+    const run = cli("lint", warnFile, "--max-warnings", bad);
+    check(`--max-warnings ${bad} is rejected`, run.code === 1 && run.out.includes("non-negative integer"), run.out);
+  }
+  const errorFile = path.join(houseRoot, "error.md");
+  await writeFile(errorFile, "測試詞。");
+  const errorRun = cli("lint", errorFile, "-p", "house-test", "--rules-dir", houseDir);
+  check("house error exits 1 and prints house policy", errorRun.code === 1 && errorRun.out.includes("house policy"), errorRun.out);
+} finally {
+  await rm(houseRoot, { recursive: true, force: true });
+}
+
+// paragraph-length-cv `skip`: heading and list paragraphs drop out of the CV.
+const { paragraphLengthCv } = (await import(path.join(root, "dist/engine/detectors/builtin/paragraph-length-cv.js"))) as typeof CvModule;
+const cvBody = "我把昨天的測試重新跑了一次，三個失敗案例都停在相同位置。";
+const cvText = [`# ${cvBody}${cvBody}${cvBody}`, cvBody, `- ${cvBody}${cvBody}`, cvBody, cvBody].join("\n\n");
+const cvAll = paragraphLengthCv(cvText, {});
+const cvSkip = paragraphLengthCv(cvText, { skip: ["heading", "list"] });
+check("CV without skip counts heading/list", cvAll !== null && cvAll > 0.3, `${cvAll}`);
+check("CV skip heading/list", cvSkip === 0, `${cvSkip}`);
+let cvThrew = false;
+try {
+  paragraphLengthCv(cvText, { skip: ["table"] });
+} catch {
+  cvThrew = true;
+}
+check("CV unknown skip value throws", cvThrew);
 
 if (errors.length > 0) {
   process.stderr.write(`Engine checks failed:\n${errors.map((error) => `- ${error}`).join("\n")}\n`);

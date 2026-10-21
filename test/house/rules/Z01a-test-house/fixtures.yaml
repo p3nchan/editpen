@@ -1,0 +1,16 @@
+schema: 1
+rule: Z01a
+fixtures:
+  - id: Z01a-fail-001
+    text: 測試詞在第一段。
+    expect: fail
+    spans: [[0, 3]]
+  - id: Z01a-fail-002
+    text: "# 測試詞標題\n\n- 測試詞清單\n\n> 測試詞引文\n\n第一段。\n\n第二段有測試詞。"
+    expect: fail
+    spans: [[37, 40]]
+    note: 標題、清單、引文不算正文段落，也不提出
+  - id: Z01a-pass-001
+    text: "第一段。\n\n第二段。\n\n第三段有測試詞。"
+    expect: pass
+    note: 第三段不在前兩段內

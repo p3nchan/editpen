@@ -1,0 +1,10 @@
+id: house-test
+extends: zh-tw
+name: House test profile
+include:
+  scope: [house]
+candidate_ceiling: warn
+enable: [F09a]
+severity:
+  F09a: error
+  Z01a: error
