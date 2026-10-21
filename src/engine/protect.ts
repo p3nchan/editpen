@@ -234,6 +234,11 @@ export function frontmatterProse(text: string, keys: readonly string[]): Range[]
     if (content === "") {
       continue;
     }
+    if (content.startsWith("#")) {
+      // A comment line (or a "#" line inside a block scalar or multi-line
+      // value): it neither continues nor ends the value above it.
+      continue;
+    }
     const indent = line.length - content.length;
     if (owner >= 0 && indent > owner) {
       // The pending value continues on this line: leave it protected.
@@ -245,9 +250,6 @@ export function frontmatterProse(text: string, keys: readonly string[]): Range[]
       pending = undefined;
     }
     owner = -1;
-    if (content.startsWith("#")) {
-      continue;
-    }
     const match = frontmatterKey.exec(line);
     if (match === null) {
       // A sequence item or other scalar owns the lines indented past it; a

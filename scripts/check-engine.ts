@@ -394,6 +394,10 @@ const fmCases: [string, string, string][] = [
   ["unclosed quote continues", "title: \"第一行\n  yyds\"", ""],
   ["plain scalar continues", "title: 第一行\n  yyds 續行", ""],
   ["sibling after a block scalar", "example: |\n  title: 不算\ntitle: yyds", "4:8:yyds"],
+  ["indented comment after a plain scalar", "title: yyds\n  # comment", "2:8:yyds"],
+  ["indented comment after a quoted scalar", "title: \"yyds\"\n  # comment", "2:9:yyds"],
+  ["comment line then a continuation", "title: 第一行\n  # comment\n  yyds", ""],
+  ["\"#\" line in a selected block scalar", "description: |\n  # yyds\n  yyds", ""],
 ];
 for (const [label, yaml, expected] of fmCases) {
   const doc = `---\n${yaml}\n---\n正文。`;
